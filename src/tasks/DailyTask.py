@@ -62,7 +62,8 @@ class DailyTask(BaseGiTask):
 
     def run(self):
         self.sleep(1)
-        self.walk()
+        # self.walk()
+        self.click_relative(0.15,0.31)
         return
 
     def battle(self):

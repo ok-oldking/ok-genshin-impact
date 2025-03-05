@@ -18,6 +18,12 @@ class BaseGiTask(BaseTask):
     def in_world_or_dungeon(self):
         return self.find_one('top_right_bag')
 
+    def click(self, x: int | Box | List[Box] = -1, y=-1, move_back=False, name=None, interval=-1, move=True,
+              down_time=0.01, after_sleep=0):
+        super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.02)
+
+
+
     def find_choices(self, box, horizontal=0, vertical=0, limit=1000, threshold=0.6) -> List[Box]:
         result = []
         to_find = box
