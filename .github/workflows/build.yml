@@ -1,0 +1,103 @@
+name: Push REPO
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    env:
+      PYTHONIOENCODING: 'UTF-8'
+
+    strategy:
+      matrix:
+        python-version: [ 3.12.6 ]
+
+    steps:
+      - name: Configure git
+        run: |
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git config --global user.email "ok-oldking@users.noreply.github.com"
+          git config --global user.name "ok-oldking"
+          echo "action_state=yellow" >> $env:GITHUB_ENV
+          echo "${{ env.action_state }}"
+
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set UTF-8 encoding
+        run: |
+          set PYTHONIOENCODING=utf-8
+          set PYTHONLEGACYWINDOWSSTDIO=utf-8
+          echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
+
+      - name: Get Changes between Tags
+        id: changes
+        uses: simbo/changes-between-tags-action@v1
+        with:
+          validate-tag: false
+
+      - name: Get tag name
+        id: tagName
+        uses: olegtarasov/get-tag@v2.1.3
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Copy ok-script lib
+        run: |
+          python -m ok.update.copy_ok_folder
+
+      - name: Rename .py files to .pyx
+        run: |
+          Get-ChildItem -Path .\src -Recurse -Filter *.py -Exclude '__init__.py' | ForEach-Object { Rename-Item $_.FullName -NewName ($_.FullName -replace '\.py$', '.pyx') }
+
+      - name: build cython
+        run: |
+          python setup.py build_ext --inplace
+          Get-ChildItem -Path .\src -Recurse -Filter *.pyx | ForEach-Object { Remove-Item $_.FullName }
+          Get-ChildItem -Path .\src -Recurse -Filter *.cpp | ForEach-Object { Remove-Item $_.FullName }
+
+      - name: Run tests
+        run: |
+          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
+              Write-Host "Running tests in $($_.FullName)"
+              python -m unittest $_.FullName
+          }
+
+      - name: Build Executable
+        run: |
+          echo "changes: ${{ steps.changes.outputs.changes }}"
+          
+          python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }} deploy.txt
+          Copy-Item -Path "dist" -Destination "ok-gf2" -Recurse
+          7z a -t7z -r "ok-gf2-${{ steps.tagName.outputs.tag }}.7z" "ok-gf2"     
+          Remove-Item -Path 'ok-gf2' -Recurse -Force
+
+        shell: pwsh
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body: |
+            ok-gf2
+            Updates：
+            ${{ steps.changes.outputs.changes }}
+          files: |
+            ok-gf2-${{ steps.tagName.outputs.tag }}.7z
+
+      - name: push to coding
+        run: |
+          python -m ok.update.push_repos --repos https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gf2.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
