@@ -2,6 +2,8 @@ import os
 
 import numpy as np
 
+from tests.GenshinInteractionLocal import GenshinInteraction
+
 version = "v5.0.11"
 
 def make_bottom_right_black(frame):
@@ -42,6 +44,7 @@ config = {
     'use_gui': True,
     'config_folder': 'configs',
     'gui_icon': 'icon.png',
+    'debug_cover_uid': True,
     'screenshot_processor': make_bottom_right_black,
     'template_matching': {
         'coco_feature_json': os.path.join('assets', 'result.json'),
@@ -54,13 +57,13 @@ config = {
         'target_height': 540
     },
     'windows': {  # required  when supporting windows game
-        'exe': 'GenshinImpact.exe',
+        'exe': ['GenshinImpact.exe', 'YuanShen.exe'],
         # 'calculate_pc_exe_path': calculate_pc_exe_path,
         # 'hwnd_class': 'UnrealWindow',
-        'interaction': 'Genshin',
+        'interaction': GenshinInteraction,
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
         # 'bit_blt_render_full': True,
-        'check_hdr': False,
+        'check_hdr': True,
         'force_no_hdr': False,
         # 'check_night_light': True,
         'force_no_night_light': False,
@@ -103,7 +106,7 @@ config = {
         },
     ]},
     'screenshots_folder': "screenshots",
-    'gui_title': 'ok-gf2',  # Optional
+    'gui_title': 'OK-GI',  # Optional
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection
     'log_file': 'logs/ok-ww.log',  # Optional, auto rotating every day
     'error_log_file': 'logs/ok-ww_error.log',

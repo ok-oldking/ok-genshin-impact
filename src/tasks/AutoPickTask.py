@@ -32,10 +32,10 @@ class AutoPickTask(TriggerTask, BaseGiTask):
                 white_list = None
                 if dialogs:
                     to_find = dialogs[0]
-                    white_list = self.find_one(pick_white_list, box=to_find.copy(x_offset=-to_find.width * 0.12,
-                                                                           width_offset=to_find.width * 0.24,
-                                                                           y_offset=-to_find.height * 0.12,
-                                                                           height_offset=to_find.height * 0.24))
+                    white_list = self.find_one(pick_white_list, box=to_find.copy(x_offset=-to_find.width * 0.15,
+                                                                           width_offset=to_find.width * 0.3,
+                                                                           y_offset=-to_find.height * 0.15,
+                                                                           height_offset=to_find.height * 0.3))
                 if white_list:
                     if white_list.name == 'pick_w_m_glass' and white_list.name == self.last_box_name and time.time() - self.last_pick_time < 60.0:
                         self.log_debug(f'same as last box skip {white_list}')
@@ -57,8 +57,7 @@ class AutoPickTask(TriggerTask, BaseGiTask):
                 elif self.debug:
                     # logger.debug(f'draw dialogs {dialogs} {white_list}')
                     self.draw_boxes(boxes=dialogs)
-                self.sleep(0.001)
-                self.next_frame()
+                break
 
     def find_dialogs(self, button_f):
         return self.find_choices(button_f, horizontal=button_f.width * 2.35, limit=1,

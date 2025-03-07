@@ -1,22 +1,17 @@
-# from adbutils import adb
-import os
+import ctypes
+import time
 
-import adbutils
-from adbutils._utils import _get_bin_dir
+def disable_mouse():
+    # Disable mouse input
+    print('disable_mouse')
+    ctypes.windll.user32.BlockInput(True)
 
-bin_dir = _get_bin_dir()
-exe = os.path.join(bin_dir, "adb.exe" if os.name == 'nt' else 'adb')
-from adbutils._utils import _is_valid_exe
+def enable_mouse():
+    # Enable mouse input
+    print('enable_mouse')
+    ctypes.windll.user32.BlockInput(False)
 
-if os.path.isfile(exe) and _is_valid_exe(exe):
-    os.environ['ADBUTILS_ADB_PATH'] = exe
-adb = adbutils.AdbClient(host="127.0.0.1", port=5037)
-print(adb.list())
-d = adb.connect('127.0.0.1:16384')
-d = adb.device(serial='127.0.0.1:16384')
-
-print(type(d))
-
-png_data = d.shell("screencap -p", encoding=None)
-png_data = d.shell("screencap -p", encoding=None)
-print(len(png_data))
+time.sleep(2)
+disable_mouse()
+time.sleep(1)
+enable_mouse()

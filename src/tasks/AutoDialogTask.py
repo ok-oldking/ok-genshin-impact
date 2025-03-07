@@ -1,3 +1,5 @@
+import time
+
 from qfluentwidgets import FluentIcon
 
 from ok import FindFeature, Logger
@@ -24,13 +26,20 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
         # Check if the scene is an instance of DialogPlayingScene or BlackDialogScene
         # self.logger.debug("trigger task2")
         entered = self.in_dialog()
+        start_time = time.time()
         while entered:
             f = self.find_one("f", box=self.box_of_screen(0.63, 0.45, 0.65,0.77))
             if f:
                 dots = self.find_feature("chat_3_dots", box=self.box_of_screen(0.66,0.45,0.69,0.77))
                 if dots:
-                    if abs(dots[0].center()[1] - f.center()[1]) > f.height/2:
-                        self.log_debug('found other than dialogs skip')
+                    found_near = False
+                    for dot in dots:
+                        if abs(dot.center()[1] - f.center()[1]) < f.height/2:
+                            found_near = True
+                            break
+                    if not found_near and time.time() - start_time > 10:
+                        self.log_info(f'Auto Quest Dialog Need to Choose Manually!', notify=not self.hwnd.visible)
+                        return
                     else:
                         # self.click(dots[-1])
                         self.send_key('f')
@@ -38,12 +47,14 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                 self.click(play)
             elif self.in_world_or_dungeon():
                 self.log_info(f'Auto Quest Dialog Completed!', notify=not self.hwnd.visible)
-                break
+                return
             elif self.in_dialog():
                 self.send_key('space')
+                # self.click_relative(0.5,0.5)
+                pass
             # else:
             #     self.click_relative(0.96,0.05)
-            self.sleep(1)
+            self.sleep(2)
 
 
 
