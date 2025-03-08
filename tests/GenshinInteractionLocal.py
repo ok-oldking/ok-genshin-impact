@@ -1,6 +1,8 @@
 import ctypes
 import time
 
+import mouse
+import pydirectinput
 import win32api
 import win32con
 import win32gui
@@ -24,41 +26,25 @@ class GenshinInteraction(BaseInteraction):
     def hwnd(self):
         return self.hwnd_window.hwnd
 
-    def send_key(self, key, down_time=0.02):
-        logger.debug(f'GenshinInteraction send key {key} {down_time} {self.hwnd_window.visible}')
-        if self.hwnd_window.visible:
-            self.pydirectinput_interaction.send_key(key, down_time)
-        else:
-            # current_position = win32api.GetCursorPos()
-            # self.block_input()
-            # self.activate()
-            # self.post_interaction.send_key_down(key, activate=False)
-            # time.sleep(down_time)
-            # self.post_interaction.send_key_up(key)
-            # time.sleep(0.01)
-            # self.deactivate()
-            # time.sleep(0.01)
-            # self.unblock_input()
-            # win32api.SetCursorPos(current_position)
+    def do_send_key(self, key):
+        vk_code = self.get_key_by_str(key)
+        self.post(win32con.WM_KEYDOWN, vk_code, 0x1e0001)
+        self.post(win32con.WM_CHAR, vk_code, 0x1e0001)
+        self.post(win32con.WM_KEYUP, vk_code, 0xc01e0001)
 
+    def operate(self, fun):
+        bg = not self.hwnd_window.is_foreground()
+        if bg:
             current_position = win32api.GetCursorPos()
-            # self.post_interaction.activate()
-            # # time.sleep(0.02)
-            # self.post_interaction.send_key_down(key, activate=False)
-            # # time.sleep(0.02)
-            # self.post_interaction.send_key_up(key)
-            # # time.sleep(0.02)
-            # self.deactivate()
-
             self.activate()
-            vk_code = self.get_key_by_str(key)
-            self.post( win32con.WM_KEYDOWN, vk_code, 0x1e0001)
-            self.post(win32con.WM_CHAR, vk_code, 0x1e0001)
-            self.post(win32con.WM_KEYUP, vk_code, 0xc01e0001)
-            # time.sleep(0.01)
+        fun()
+        if bg:
             self.deactivate()
             win32api.SetCursorPos(current_position)
-            logger.debug(f'GenshinInteraction use post send key {key} {down_time} {self.hwnd_window.visible}')
+
+    def send_key(self, key, down_time=0.02):
+        logger.debug(f'GenshinInteraction send key {key} {down_time}')
+        self.operate(lambda: self.do_send_key(key))
 
     def block_input(self):
         self.user32.BlockInput(True)
@@ -67,7 +53,7 @@ class GenshinInteraction(BaseInteraction):
         self.user32.BlockInput(False)
 
     def send_key_down(self, key):
-        if self.hwnd_window.visible:
+        if self.hwnd_window.is_foreground():
             self.pydirectinput_interaction.send_key_down(key)
         else:
             current_position = win32api.GetCursorPos()
@@ -90,6 +76,16 @@ class GenshinInteraction(BaseInteraction):
             vk_code = win32api.VkKeyScan(key)
         return vk_code
 
+    def move_mouse_by(self, x=0, y=0):
+            # Get the current mouse position
+        current_x, current_y = pydirectinput.position()
+        # current_position = win32api.GetCursorPos()
+        # Calculate the new x-coordinate
+        new_x = current_x + x
+        new_y = current_y + y
+        logger.debug(f'GenshinInteraction move mouse by {new_x} {new_y} {current_x} {current_y} ')
+        mouse.move(x, y, 0,0)
+
     def move(self, x, y, down_btn=0):
         long_pos = self.update_mouse_pos(x, y, True)
         self.post(win32con.WM_MOUSEMOVE, down_btn, long_pos)
@@ -108,17 +104,41 @@ class GenshinInteraction(BaseInteraction):
         # self.activate()
         # Calculate the wParam
         # Positive scroll_amount indicates scroll up, negative is scroll down
-        logger.debug(f'scroll {x}, {y}, {scroll_amount}')
-        if x > 0 and y > 0:
-            long_position = self.update_mouse_pos(x, y)
-        else:
-            long_position = 0
-        wParam = win32api.MAKELONG(0, win32con.WHEEL_DELTA * scroll_amount)
-        # Send the WM_MOUSEWHEEL message
-        time.sleep(0.02)
-        self.post(win32con.WM_MOUSEWHEEL, wParam, long_position)
-        time.sleep(0.02)
-        self.deactivate()
+        logger.debug(f'gi scroll {x}, {y}, {scroll_amount}')
+        abs_x, abs_y = self.capture.get_abs_cords(x, y)
+        click_pos = win32api.MAKELONG(x, y)
+        current_position = win32api.GetCursorPos()
+        self.activate()
+        # Block input using BlockInput API from user32.dll
+        self.block_input()
+        try:
+            # win32api.SetCursorPos((abs_x, abs_y))
+            # time.sleep(0.0001)
+
+            # self.post(win32con.WM_MOUSEMOVE, 0, click_pos)
+            time.sleep(0.2)
+            mouse.wheel(1)
+            # wParam = win32api.MAKELONG(0, win32con.WHEEL_DELTA * scroll_amount)
+            # Send the WM_MOUSEWHEEL message
+            # self.post(win32con.WM_MOUSEWHEEL, wParam, click_pos)
+            # time.sleep(0.008) # gf2
+            time.sleep(0.2)
+            # win32api.SetCursorPos(current_position)
+            # time.sleep(0.02)
+        except Exception as e:
+            logger.error(f'Failed to scroll {x}, {y}, {click_pos} ', e)
+        finally:
+            self.unblock_input()
+            self.deactivate()
+            win32api.SetCursorPos(current_position)
+            time.sleep(0.0001)
+
+        # wParam = win32api.MAKELONG(0, win32con.WHEEL_DELTA * scroll_amount)
+        # # Send the WM_MOUSEWHEEL message
+        # time.sleep(0.02)
+        # self.post(win32con.WM_MOUSEWHEEL, wParam, long_position)
+        # time.sleep(0.02)
+        # self.deactivate()
 
     def post(self, message, wParam=0, lParam=0):
         win32gui.PostMessage(self.hwnd, message, wParam, lParam)
@@ -166,15 +186,14 @@ class GenshinInteraction(BaseInteraction):
 
     def click(self, x=-1, y=-1, move_back=False, name=None, down_time=0.02, move=True):
         super().click(x, y, name=name)
-        if self.hwnd_window.visible:
+        if self.hwnd_window.is_foreground():
             self.pydirectinput_interaction.click(x, y, move_back=move_back, down_time=down_time, move=move, name=name)
         else:
-            current_position = win32api.GetCursorPos()
-            self.activate()
             abs_x, abs_y = self.capture.get_abs_cords(x, y)
             click_pos = win32api.MAKELONG(x, y)
             logger.debug(f'click {x}, {y}, {click_pos} {down_time}')
-
+            current_position = win32api.GetCursorPos()
+            self.activate()
             # Block input using BlockInput API from user32.dll
             self.block_input()
             try:
@@ -189,12 +208,12 @@ class GenshinInteraction(BaseInteraction):
                 time.sleep(down_time)
                 # win32api.SetCursorPos(current_position)
                 # time.sleep(0.02)
-                win32api.SetCursorPos(current_position)
             except Exception as e:
                 logger.error(f'Failed to click {x}, {y}, {click_pos} {down_time}', e)
             finally:
                 self.unblock_input()
                 self.deactivate()
+                win32api.SetCursorPos(current_position)
                 time.sleep(0.0001)
 
     def right_click(self, x=-1, y=-1, move_back=False, name=None):
