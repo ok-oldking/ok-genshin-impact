@@ -37,11 +37,12 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                         if abs(dot.center()[1] - f.center()[1]) < f.height/2:
                             found_near = True
                             break
-                    if not found_near and time.time() - start_time > 10:
-                        self.log_info(f'Auto Quest Dialog Need to Choose Manually!', notify=not self.hwnd.visible)
-                        return
+                    if not found_near:
+                        if time.time() - start_time > 10:
+                            self.log_info(f'Auto Quest Dialog Need to Choose Manually!', notify=not self.hwnd.visible)
+                            return
                     else:
-                        # self.click(dots[-1])
+                        self.screenshot('dialog')
                         self.send_key('f')
             elif play:=self.find_one('top_left_chat_play', horizontal_variance=0.02):
                 self.click(play)

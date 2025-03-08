@@ -1,4 +1,5 @@
 import re
+import time
 from typing import List
 
 import cv2
@@ -27,20 +28,21 @@ class BaseGiTask(BaseTask):
 
 
 
-    def find_choices(self, box, horizontal=0, vertical=0, limit=1000, threshold=0.6) -> List[Box]:
+    def find_choices(self, box, horizontal=0, vertical=0, limit=1, threshold=0.2) -> List[Box]:
         result = []
         to_find = box
         count = 0
         horizontal = int(horizontal)
         vertical = int(vertical)
-        frame = self.frame
+        start = time.time()
         while True:
+            frame = self.frame
             to_find = Box(to_find.x + horizontal, to_find.y + vertical, to_find.width, to_find.height, name='choice')
             percentage_white = calculate_color_percentage(frame, white_color, to_find)
             # percentage_grey = calculate_color_percentage(frame, dark_gray_color, to_find)
             to_find.confidence = percentage_white
-            if percentage_white < 0.03:
-                to_find.confidence = 0
+            # self.logger.debug(f'percentage_white:{percentage_white}')
+            self.draw_boxes(boxes=to_find)
             if to_find.confidence > threshold:
                 count = count + 1
                 result.append(to_find)
@@ -49,6 +51,11 @@ class BaseGiTask(BaseTask):
                 if horizontal == 0 and vertical == 0:
                     break
             else:
+                percentage_less_white = calculate_color_percentage(frame, less_white_color, to_find)
+                # self.logger.debug(f'percentage_less_white:{percentage_less_white}')
+                if percentage_less_white > threshold - 0.05 and time.time() - start < 1:
+                    self.next_frame()
+                    continue
                 break
         return result
 
@@ -128,9 +135,15 @@ class BaseGiTask(BaseTask):
 
 
 white_color = {
-    'r': (250, 255),  # Red range
-    'g': (250, 255),  # Green range
-    'b': (250, 255)  # Blue range
+    'r': (245, 255),  # Red range
+    'g': (245, 255),  # Green range
+    'b': (245, 255)  # Blue range
+}
+
+less_white_color = {
+    'r': (210, 250),  # Red range
+    'g': (210, 250),  # Green range
+    'b': (210, 250)  # Blue range
 }
 
 dark_gray_color = {

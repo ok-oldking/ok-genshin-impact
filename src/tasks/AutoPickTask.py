@@ -2,7 +2,7 @@ import time
 
 from qfluentwidgets import FluentIcon
 
-from ok import FindFeature, Logger
+from ok import FindFeature, Logger, Box
 from ok import TriggerTask
 from src.tasks.BaseGiTask import BaseGiTask, white_color
 
@@ -21,21 +21,31 @@ class AutoPickTask(TriggerTask, BaseGiTask):
 
     def trigger(self):
         # self.logger.debug("trigger task2")
+        wait_start = 0
         if self.in_world_or_dungeon():
-            while button_f := self.find_one("f", vertical_variance=0.1):
+            while button_f := self.find_one("f", vertical_variance=0.14):
                 percent = self.calculate_color_percentage(white_color, button_f)
-                if percent < 0.8:
-                    self.log_debug(f'wait for f animation {percent}')
+                if percent < 0.75:
                     self.next_frame()
                     continue
-                dialogs = self.find_dialogs(button_f)
-                white_list = None
+                text_zone = button_f.copy(x_offset=button_f.width * 4, width_offset=button_f.width * 2)
+                if wait_start == 0 or time.time() - wait_start < 0.2:
+                    white_percent = self.calculate_color_percentage(white_color, text_zone)
+                    if white_percent < 0.05:
+                        if wait_start == 0:
+                            wait_start = time.time()
+                        if self.debug:
+                            self.log_debug(f'wait for text {white_percent}')
+                            # self.screenshot('wait_text')
+                        self.next_frame()
+                        continue
+                icon_zone = button_f.copy(x_offset=button_f.width * 2.2, width_offset=button_f.width * 0.3, y_offset=-button_f.height * 0.15, height_offset=button_f.height * 0.3,
+                              name='choice')
+
+                dialogs = self.find_black_list_dialogs(icon_zone)
                 if dialogs:
-                    to_find = dialogs[0]
-                    white_list = self.find_one(pick_white_list, box=to_find.copy(x_offset=-to_find.width * 0.15,
-                                                                           width_offset=to_find.width * 0.3,
-                                                                           y_offset=-to_find.height * 0.15,
-                                                                           height_offset=to_find.height * 0.3))
+                    return
+                white_list = self.find_one(pick_white_list, box=icon_zone)
                 if white_list:
                     if white_list.name == 'pick_w_m_glass' and white_list.name == self.last_box_name and time.time() - self.last_pick_time < 60.0:
                         self.log_debug(f'same as last box skip {white_list}')
@@ -48,20 +58,15 @@ class AutoPickTask(TriggerTask, BaseGiTask):
                 else:
                     # self.log_debug(f'set last_box_name to None {white_list}')
                     self.last_box_name = None
-                if not dialogs:
-                    self.logger.info(f"found a f {percent} {white_list} {dialogs}")
+                self.logger.info(f"found a f {percent} {white_list} {dialogs}")
+                if self.debug:
                     self.screenshot('pick')
-                    self.send_key("f")
-                    self.sleep(0.005)
-                    continue
-                elif self.debug:
-                    # logger.debug(f'draw dialogs {dialogs} {white_list}')
-                    self.draw_boxes(boxes=dialogs)
-                break
+                self.send_key("f")
+                self.sleep(0.03)
+                continue
 
-    def find_dialogs(self, button_f):
-        return self.find_choices(button_f, horizontal=button_f.width * 2.35, limit=1,
-                               threshold=0.3)
+    def find_black_list_dialogs(self, box):
+        return self.find_one(['chat_3_dots', 'pick_up_b_gear', 'pick_b_key'], box=box)
 
 pick_white_list = ['pick_w_chest', 'pick_w_m_glass', 'pick_w_butterfly']
 
