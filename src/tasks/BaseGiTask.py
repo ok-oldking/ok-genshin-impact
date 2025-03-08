@@ -1,7 +1,10 @@
 import re
 from typing import List
 
-from ok import BaseTask, find_boxes_within_boundary, find_boxes_by_name, Box, calculate_color_percentage
+import cv2
+import numpy as np
+
+from ok import BaseTask, find_boxes_within_boundary, find_boxes_by_name, Box, calculate_color_percentage, og
 from ok import Logger
 
 logger = Logger.get_logger(__name__)
@@ -49,6 +52,79 @@ class BaseGiTask(BaseTask):
                 break
         return result
 
+    def find_tree(self, threshold=0.5) -> List[Box]:
+        """
+        Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
+
+        Args:
+            onnx_model (str): Path to the ONNX model.
+            input_image (ndarray): Path to the input image.
+
+        Returns:
+            list: List of dictionaries containing detection information such as class_id, class_name, confidence, etc.
+        """
+        # Load the ONNX model
+        model = og.my_app.tree_model
+
+        # Read the input image
+        # original_image: np.ndarray = cv2.imread(input_image)
+        original_image: np.ndarray = self.frame
+        [height, width, _] = original_image.shape
+
+        # Prepare a square image for inference
+        length = max((height, width))
+        image = np.zeros((length, length, 3), np.uint8)
+        image[0:height, 0:width] = original_image
+        model_length = 640
+        # Calculate scale factor
+        scale = length / model_length
+
+        # Preprocess the image and prepare blob for model
+        blob = cv2.dnn.blobFromImage(image, scalefactor=1 / 255, size=(model_length, model_length), swapRB=True)
+        model.setInput(blob)
+
+        # Perform inference
+        outputs = model.forward()
+
+        # Prepare output array
+        outputs = np.array([cv2.transpose(outputs[0])])
+        rows = outputs.shape[1]
+
+        boxes = []
+        scores = []
+        class_ids = []
+
+        # Iterate through output to collect bounding boxes, confidence scores, and class IDs
+        for i in range(rows):
+            classes_scores = outputs[0][i][4:]
+            (minScore, maxScore, minClassLoc, (x, maxClassIndex)) = cv2.minMaxLoc(classes_scores)
+            if maxScore >= 0.25:
+                box = [
+                    outputs[0][i][0] - (0.5 * outputs[0][i][2]),
+                    outputs[0][i][1] - (0.5 * outputs[0][i][3]),
+                    outputs[0][i][2],
+                    outputs[0][i][3],
+                ]
+                boxes.append(box)
+                scores.append(maxScore)
+                class_ids.append(maxClassIndex)
+
+        # Apply NMS (Non-maximum suppression)
+        result_boxes = cv2.dnn.NMSBoxes(boxes, scores, threshold, 0.45, 0.5)
+
+        detections = []
+
+        # Iterate through NMS results to draw bounding boxes and labels
+        for i in range(len(result_boxes)):
+            index = result_boxes[i]
+            box = boxes[index]
+            my_box = Box(box[0] * scale, box[1] * scale, box[2]* scale, box[3] * scale)
+            my_box.name = "Tree"
+            my_box.confidence = scores[index]
+            detections.append(my_box)
+
+        return sorted(detections, key=lambda detection: detection.confidence, reverse=True)
+
 
 
 white_color = {
@@ -62,13 +138,5 @@ dark_gray_color = {
     'g': (40, 75),  # Green range
     'b': (40, 85)  # Blue range
 }
-
-
-# def find_choice(frame, box, horizontal=0, vertical=0, threshold=0.6) -> Box | None:
-#     result = find_choices(frame, box, horizontal, vertical, 1, threshold)
-#     if len(result) > 0:
-#         return result[0]
-#     else:
-#         return None
 
 

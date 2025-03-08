@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from tests.GenshinInteractionLocal import GenshinInteraction
+from src.GenshinInteractionLocal import GenshinInteraction
 
 version = "v5.0.11"
 

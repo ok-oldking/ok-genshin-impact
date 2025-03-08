@@ -11,6 +11,31 @@ from ok import Logger, BaseInteraction, BaseCaptureMethod, PostMessageInteractio
 
 logger = Logger.get_logger(__name__)
 
+# Define constants from Windows API
+MOUSEEVENTF_MOVE = 0x0001
+MOUSEEVENTF_ABSOLUTE = 0x8000
+SCREEN_WIDTH = ctypes.windll.user32.GetSystemMetrics(0)
+SCREEN_HEIGHT = ctypes.windll.user32.GetSystemMetrics(1)
+
+# Define the MOUSEINPUT structure
+class MOUSEINPUT(ctypes.Structure):
+    _fields_ = [("dx", ctypes.c_long),
+                 ("dy", ctypes.c_long),
+                 ("mouseData", ctypes.c_ulong),
+                 ("dwFlags", ctypes.c_ulong),
+                 ("time", ctypes.c_ulong),
+                 ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong))]
+
+# Define the INPUT structure
+class INPUT(ctypes.Structure):
+    _fields_ = [("type", ctypes.c_ulong),
+                 ("mi", MOUSEINPUT)]
+
+# Define the SendInput function
+SendInput = ctypes.windll.user32.SendInput
+SendInput.argtypes = [ctypes.c_uint, ctypes.POINTER(INPUT), ctypes.c_int]
+SendInput.restype = ctypes.c_uint
+
 class GenshinInteraction(BaseInteraction):
 
     def __init__(self, capture: BaseCaptureMethod, hwnd_window):
@@ -21,6 +46,7 @@ class GenshinInteraction(BaseInteraction):
         self.hwnd_window = hwnd_window
         self.hwnd_window.visible_monitors.append(self)
         self.user32 = ctypes.windll.user32
+        self.cursor_position = None
 
     @property
     def hwnd(self):
@@ -32,15 +58,23 @@ class GenshinInteraction(BaseInteraction):
         self.post(win32con.WM_CHAR, vk_code, 0x1e0001)
         self.post(win32con.WM_KEYUP, vk_code, 0xc01e0001)
 
-    def operate(self, fun):
+    def operate(self, fun, block=False):
         bg = not self.hwnd_window.is_foreground()
+        current_position = None
         if bg:
-            current_position = win32api.GetCursorPos()
+            if block:
+                self.block_input()
+            self.cursor_position = win32api.GetCursorPos()
             self.activate()
-        fun()
+        try:
+            fun()
+        except:
+            logger.error(f'operate exception')
         if bg:
             self.deactivate()
-            win32api.SetCursorPos(current_position)
+            win32api.SetCursorPos(self.cursor_position)
+            if block:
+                self.unblock_input()
 
     def send_key(self, key, down_time=0.02):
         logger.debug(f'GenshinInteraction send key {key} {down_time}')
@@ -77,14 +111,13 @@ class GenshinInteraction(BaseInteraction):
         return vk_code
 
     def move_mouse_by(self, x=0, y=0):
-            # Get the current mouse position
+        # Get the current mouse position
         current_x, current_y = pydirectinput.position()
         # current_position = win32api.GetCursorPos()
         # Calculate the new x-coordinate
         new_x = current_x + x
         new_y = current_y + y
         logger.debug(f'GenshinInteraction move mouse by {new_x} {new_y} {current_x} {current_y} ')
-        mouse.move(x, y, 0,0)
 
     def move(self, x, y, down_btn=0):
         long_pos = self.update_mouse_pos(x, y, True)
@@ -116,6 +149,7 @@ class GenshinInteraction(BaseInteraction):
             # time.sleep(0.0001)
 
             # self.post(win32con.WM_MOUSEMOVE, 0, click_pos)
+            import mouse
             time.sleep(0.2)
             mouse.wheel(1)
             # wParam = win32api.MAKELONG(0, win32con.WHEEL_DELTA * scroll_amount)
@@ -185,36 +219,20 @@ class GenshinInteraction(BaseInteraction):
         self.activate()
 
     def click(self, x=-1, y=-1, move_back=False, name=None, down_time=0.02, move=True):
-        super().click(x, y, name=name)
-        if self.hwnd_window.is_foreground():
-            self.pydirectinput_interaction.click(x, y, move_back=move_back, down_time=down_time, move=move, name=name)
-        else:
-            abs_x, abs_y = self.capture.get_abs_cords(x, y)
-            click_pos = win32api.MAKELONG(x, y)
-            logger.debug(f'click {x}, {y}, {click_pos} {down_time}')
-            current_position = win32api.GetCursorPos()
-            self.activate()
-            # Block input using BlockInput API from user32.dll
-            self.block_input()
-            try:
-                win32api.SetCursorPos((abs_x, abs_y))
-                # time.sleep(0.0001)
-                self.post(win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, click_pos
-                          )
-                # time.sleep(0.0001)
-                self.post(win32con.WM_LBUTTONUP, 0, click_pos
-                          )
-                # time.sleep(0.008) # gf2
-                time.sleep(down_time)
-                # win32api.SetCursorPos(current_position)
-                # time.sleep(0.02)
-            except Exception as e:
-                logger.error(f'Failed to click {x}, {y}, {click_pos} {down_time}', e)
-            finally:
-                self.unblock_input()
-                self.deactivate()
-                win32api.SetCursorPos(current_position)
-                time.sleep(0.0001)
+        self.operate(lambda: self.do_click(x, y, down_time=down_time), block=True)
+
+    def do_click(self, x=-1, y=-1, move_back=False, name=None, down_time=0.02, move=True):
+        abs_x, abs_y = self.capture.get_abs_cords(x, y)
+        click_pos = win32api.MAKELONG(x, y)
+        logger.debug(f'click {x}, {y}, {click_pos} {down_time}')
+        win32api.SetCursorPos((abs_x, abs_y))
+        time.sleep(0.001)
+        self.post(win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, click_pos
+                  )
+        self.post(win32con.WM_LBUTTONUP, 0, click_pos
+                  )
+        time.sleep(down_time)
+
 
     def right_click(self, x=-1, y=-1, move_back=False, name=None):
         super().right_click(x, y, name=name)
@@ -255,3 +273,25 @@ class GenshinInteraction(BaseInteraction):
         logger.debug(f"on_visible {visible}")
         if visible:
             self.activate()
+
+    def do_move_mouse_relative(self, dx, dy):
+        """
+        Moves the mouse cursor relative to its current position using user32.SendInput.
+
+        Args:
+            dx: The number of pixels to move the mouse horizontally (positive for right, negative for left).
+            dy: The number of pixels to move the mouse vertically (positive for down, negative for up).
+        """
+
+        mi = MOUSEINPUT(dx, dy, 0, MOUSEEVENTF_MOVE, 0, None)
+        i = INPUT(0, mi)  # type=0 indicates a mouse event
+        SendInput(1, ctypes.pointer(i), ctypes.sizeof(INPUT))
+
+
+    def do_move_mouse_absolute(self, x, y):
+        """Moves the mouse cursor to an absolute screen position using user32.SendInput.
+        Takes normalized coordinates in the range [0, 65535] for x and y.
+        """
+        mi = MOUSEINPUT(int(x * (65535.0 / SCREEN_WIDTH)), int(y * (65535.0 / SCREEN_HEIGHT)), 0, MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, 0, None)
+        i = INPUT(0, mi)
+        SendInput(1, ctypes.pointer(i), ctypes.sizeof(INPUT))
