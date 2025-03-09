@@ -107,7 +107,7 @@ class DailyTask(BaseGiTask):
 
 
     def run(self):
-        return self.log_info(f'Developing')
+        return self.log_info(f'Developing', notify=True)
         self.sleep(2)
 
         self.test_tree()
