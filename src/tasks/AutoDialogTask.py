@@ -30,6 +30,7 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
     def trigger(self):
         entered = self.in_dialog()
         start_time = time.time()
+        last_in_dialog_time = start_time
         while entered:
             f = self.find_one("f", box=self.box_of_screen(0.63, 0.45, 0.65,0.77))
             if f:
@@ -42,11 +43,12 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                             break
                     if not found_near:
                         if time.time() - start_time > 10:
-                            self.log_info(f'Auto Quest Dialog Need to Choose Manually!', notify=not self.hwnd.visible and self.config.get("Send Notification when Dialog Completed"))
+                            self.log_info(f'Auto Quest Dialog Need to Choose Manually!', notify=not self.hwnd.visible)
                             return
                     else:
                         if self.debug:
                             self.screenshot('dialog')
+                        last_in_dialog_time = time.time()
                         self.send_key('f')
             elif play:=self.find_one('top_left_chat_play', horizontal_variance=0.02):
                 self.click(play)
@@ -55,10 +57,16 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                 # self.executor.interaction.deactivate()
                 return
             elif self.find_one('dialog_black_screen'):
+                last_in_dialog_time = time.time()
                 self.send_key('space')
             elif self.in_dialog():
+                last_in_dialog_time = time.time()
                 if self.config.get('Speed up Dialog Using Space Key', False):
                     self.send_key('space')
+            elif time.time() - last_in_dialog_time > 10:
+                self.log_info(f'Auto Quest Dialog Need to Choose Manually!',
+                              notify=not self.hwnd.visible)
+                return
             self.sleep(2)
 
 

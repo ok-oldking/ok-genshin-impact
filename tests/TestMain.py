@@ -3,11 +3,11 @@ import unittest
 
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
-from src.tasks.BaseGfTask import BaseGfTask
+from src.tasks.BaseGiTask import BaseGiTask
 
 
 class TestBattleBaseSerialization(TaskTestCase):
-    task_class = BaseGfTask
+    task_class = BaseGiTask
 
     config = config
 

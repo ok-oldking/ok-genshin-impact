@@ -68,15 +68,15 @@ class GenshinInteraction(BaseInteraction):
         except:
             logger.error(f'operate exception')
         if bg:
-            self.deactivate()
             win32api.SetCursorPos(self.cursor_position)
+            self.deactivate()
             if block:
                 self.unblock_input()
 
     def send_key(self, key, down_time=0.02):
         logger.debug(f'GenshinInteraction send key {key} {down_time}')
-        self.do_send_key(key)
-        # self.operate(lambda: self.do_send_key(key))
+        # self.do_send_key(key)
+        self.operate(lambda: self.do_send_key(key))
 
     def block_input(self):
         self.user32.BlockInput(True)
@@ -208,8 +208,8 @@ class GenshinInteraction(BaseInteraction):
         self.post_interaction.activate()
 
     def deactivate(self):
-        self.post_interaction.deactivate()
         self.hwnd_window.to_handle_mute = True
+        self.post_interaction.deactivate()
 
     def try_activate(self):
         # if time.time() - self.last_activate > self.activate_interval:
