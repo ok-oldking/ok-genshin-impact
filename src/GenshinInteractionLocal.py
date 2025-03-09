@@ -208,8 +208,8 @@ class GenshinInteraction(BaseInteraction):
         self.post_interaction.activate()
 
     def deactivate(self):
-        self.hwnd_window.to_handle_mute = True
         self.post_interaction.deactivate()
+        self.hwnd_window.to_handle_mute = True
 
     def try_activate(self):
         # if time.time() - self.last_activate > self.activate_interval:
