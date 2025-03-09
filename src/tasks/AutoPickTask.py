@@ -14,8 +14,9 @@ class AutoPickTask(TriggerTask, BaseGiTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "Auto Pick"
-        self.description = "Auto Pick Flowers in Game World"
+        self.description = "Auto Pick Up in Game World"
         self.icon = FluentIcon.SHOPPING_CART
+        self.default_config = {'_enabled': True}
         self.last_box_name = None
         self.last_pick_time = 0
 

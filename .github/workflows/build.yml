@@ -40,15 +40,39 @@ jobs:
           set PYTHONLEGACYWINDOWSSTDIO=utf-8
           echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
 
-      - name: Get Changes between Tags
-        id: changes
-        uses: simbo/changes-between-tags-action@v1
-        with:
-          validate-tag: false
-
       - name: Get tag name
         id: tagName
         uses: olegtarasov/get-tag@v2.1.3
+
+      - name: Generate Changelog (Optional, but recommended)
+        id: changes
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const tag = process.env.TAG_NAME;  // Access the tag name from the environment
+            console.log(`Generating changelog for tag: ${tag}`)
+            const response = await github.rest.repos.compareCommits({
+              owner: owner,
+              repo: repo,
+              base: "${{ github.event.before }}", // Previous commit
+              head: "${{ github.sha }}", // Current commit (tag)
+            });
+            
+            const commits = response.data.commits;
+            let changes = "";
+            
+            if (commits && commits.length > 0) {
+              changes += "Commits:\n";
+              commits.forEach(commit => {
+                const message = commit.commit.message.split('\n')[0]; // Get only the first line of the commit message
+                changes += `- ${message} (${commit.author.login})\n`;
+              });
+            } else {
+              changes = "No commits found between previous and current tag.";
+            }
+            
+            core.setOutput('changes', changes);
 
       - name: Install dependencies
         run: |
@@ -81,23 +105,34 @@ jobs:
           echo "changes: ${{ steps.changes.outputs.changes }}"
           
           python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }} deploy.txt
-          Copy-Item -Path "dist" -Destination "ok-gf2" -Recurse
-          7z a -t7z -r "ok-gf2-${{ steps.tagName.outputs.tag }}.7z" "ok-gf2"     
-          Remove-Item -Path 'ok-gf2' -Recurse -Force
+          Copy-Item -Path "dist" -Destination "ok-gi" -Recurse
+          7z a -t7z -r "ok-gi-${{ steps.tagName.outputs.tag }}.7z" "ok-gi"     
+          Remove-Item -Path 'ok-gi' -Recurse -Force
 
         shell: pwsh
 
-      - name: Release
+      - name: Release to Another Repository
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.OK_GH }} #Important: use a token for the other repo
         with:
+          owner: ok-oldking # Replace with the owner of the target repo
+          repo: ok-genshin-impact   # Replace with the name of the target repo
+          tag_name: ${{ steps.tagName.outputs.tag }}
+          name: ok-gi-${{ steps.tagName.outputs.tag }}
           body: |
-            ok-gf2
+            OK-GI release.
             Updates：
             ${{ steps.changes.outputs.changes }}
           files: |
-            ok-gf2-${{ steps.tagName.outputs.tag }}.7z
+            ok-gi-${{ steps.tagName.outputs.tag }}.7z
+
+      - name: push to github
+        run: |
+          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-genshin-impact --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
+
 
       - name: push to coding
         run: |
-          python -m ok.update.push_repos --repos https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gf2.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
+          python -m ok.update.push_repos --repos https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}

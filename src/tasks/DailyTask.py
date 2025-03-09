@@ -16,19 +16,10 @@ class DailyTask(BaseGiTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "test"
-        self.description = "test"
+        self.name = "Auto Daily Task"
+        self.description = "Farm Relic and Finish Daily Task"
         self.default_config.update({
-            '公共区': True,
-            '购买免费礼包': True,
-            '自动刷体力': True,
-            '竞技场': True,
-            '兵棋推演': True,
-            '班组': True,
-            '尘烟': True,
-            '领任务': True,
-            '大月卡': True,
-            '邮件': True,
+
         })
 
     def mouse_move_test(self):
@@ -116,13 +107,9 @@ class DailyTask(BaseGiTask):
 
 
     def run(self):
+        return self.log_info(f'Developing')
         self.sleep(2)
-        # self.walk()
-        # self.send_key('f')
-        # self.click_relative(0.15,0.31)
-        # for i in range(3):
-        #     self.log_debug('wheel')
-        # mouse.wheel(1)
+
         self.test_tree()
         # self.scroll_relative(0.5, 0.5, 1)
 

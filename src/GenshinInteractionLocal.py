@@ -11,25 +11,22 @@ from ok import Logger, BaseInteraction, BaseCaptureMethod, PostMessageInteractio
 
 logger = Logger.get_logger(__name__)
 
-# Define constants from Windows API
-MOUSEEVENTF_MOVE = 0x0001
-MOUSEEVENTF_ABSOLUTE = 0x8000
-SCREEN_WIDTH = ctypes.windll.user32.GetSystemMetrics(0)
-SCREEN_HEIGHT = ctypes.windll.user32.GetSystemMetrics(1)
 
 # Define the MOUSEINPUT structure
 class MOUSEINPUT(ctypes.Structure):
     _fields_ = [("dx", ctypes.c_long),
-                 ("dy", ctypes.c_long),
-                 ("mouseData", ctypes.c_ulong),
-                 ("dwFlags", ctypes.c_ulong),
-                 ("time", ctypes.c_ulong),
-                 ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong))]
+                ("dy", ctypes.c_long),
+                ("mouseData", ctypes.c_ulong),
+                ("dwFlags", ctypes.c_ulong),
+                ("time", ctypes.c_ulong),
+                ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong))]
+
 
 # Define the INPUT structure
 class INPUT(ctypes.Structure):
     _fields_ = [("type", ctypes.c_ulong),
-                 ("mi", MOUSEINPUT)]
+                ("mi", MOUSEINPUT)]
+
 
 # Define the SendInput function
 SendInput = ctypes.windll.user32.SendInput
@@ -210,8 +207,8 @@ class GenshinInteraction(BaseInteraction):
         self.post_interaction.activate()
 
     def deactivate(self):
-        self.hwnd_window.to_handle_mute = True
         self.post_interaction.deactivate()
+        self.hwnd_window.to_handle_mute = True
 
     def try_activate(self):
         # if time.time() - self.last_activate > self.activate_interval:
@@ -232,7 +229,6 @@ class GenshinInteraction(BaseInteraction):
         self.post(win32con.WM_LBUTTONUP, 0, click_pos
                   )
         time.sleep(down_time)
-
 
     def right_click(self, x=-1, y=-1, move_back=False, name=None):
         super().right_click(x, y, name=name)
@@ -272,7 +268,7 @@ class GenshinInteraction(BaseInteraction):
         """
         logger.debug(f"on_visible {visible}")
         if visible:
-            self.activate()
+            self.post_interaction.activate()
 
     def do_move_mouse_relative(self, dx, dy):
         """
@@ -283,15 +279,6 @@ class GenshinInteraction(BaseInteraction):
             dy: The number of pixels to move the mouse vertically (positive for down, negative for up).
         """
 
-        mi = MOUSEINPUT(dx, dy, 0, MOUSEEVENTF_MOVE, 0, None)
+        mi = MOUSEINPUT(dx, dy, 0, 0x0001, 0, None)
         i = INPUT(0, mi)  # type=0 indicates a mouse event
-        SendInput(1, ctypes.pointer(i), ctypes.sizeof(INPUT))
-
-
-    def do_move_mouse_absolute(self, x, y):
-        """Moves the mouse cursor to an absolute screen position using user32.SendInput.
-        Takes normalized coordinates in the range [0, 65535] for x and y.
-        """
-        mi = MOUSEINPUT(int(x * (65535.0 / SCREEN_WIDTH)), int(y * (65535.0 / SCREEN_HEIGHT)), 0, MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, 0, None)
-        i = INPUT(0, mi)
         SendInput(1, ctypes.pointer(i), ctypes.sizeof(INPUT))

@@ -1,10 +1,11 @@
 src
 ok
+assets
 config.py
 main.py
-ok-gf2.exe
+ok-gi.exe
 main.py
 icon.png
 requirements.txt
 README.md
-.gitignore
+i18n

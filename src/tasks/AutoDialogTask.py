@@ -17,14 +17,17 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
         self.description = "Auto Dialog in Quests"
         self.icon = FluentIcon.CHAT
         self.trigger_interval = 0.5
+        self.default_config = {
+            '_enabled': True,
+            "Speed up Dialog Using Space Key": True,
+            "Send Notification when Dialog Completed": True,
+        }
 
     def in_dialog(self):
         return self.find_one('top_left_chat_hide', horizontal_variance=0.02)
 
 
     def trigger(self):
-        # Check if the scene is an instance of DialogPlayingScene or BlackDialogScene
-        # self.logger.debug("trigger task2")
         entered = self.in_dialog()
         start_time = time.time()
         while entered:
@@ -39,22 +42,22 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                             break
                     if not found_near:
                         if time.time() - start_time > 10:
-                            self.log_info(f'Auto Quest Dialog Need to Choose Manually!', notify=not self.hwnd.visible)
+                            self.log_info(f'Auto Quest Dialog Need to Choose Manually!', notify=not self.hwnd.visible and self.config.get("Send Notification when Dialog Completed"))
                             return
                     else:
-                        self.screenshot('dialog')
+                        if self.debug:
+                            self.screenshot('dialog')
                         self.send_key('f')
             elif play:=self.find_one('top_left_chat_play', horizontal_variance=0.02):
                 self.click(play)
             elif self.in_world_or_dungeon():
-                self.log_info(f'Auto Quest Dialog Completed!', notify=not self.hwnd.visible)
+                self.log_info(f'Auto Quest Dialog Completed!', notify=not self.hwnd.visible and self.config.get("Send Notification when Dialog Completed"))
                 return
-            elif self.in_dialog():
+            elif self.find_one('dialog_black_screen'):
                 self.send_key('space')
-                # self.click_relative(0.5,0.5)
-                pass
-            # else:
-            #     self.click_relative(0.96,0.05)
+            elif self.in_dialog():
+                if self.config.get('Speed up Dialog Using Space Key', False):
+                    self.send_key('space')
             self.sleep(2)
 
 

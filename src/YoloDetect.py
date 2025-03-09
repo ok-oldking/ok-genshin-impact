@@ -1,8 +1,3 @@
-# Ultralytics YOLO 🚀, AGPL-3.0 license
-
-import argparse
-import os.path
-
 import cv2.dnn
 import numpy as np
 

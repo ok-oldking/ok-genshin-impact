@@ -88,20 +88,24 @@ config = {
         'min_size': (1280, 720),
         'resize_to': [(2560, 1440), (1920, 1080), (1280, 720)]
     },
-    'git_update': {'sources': [
+    'git_update': {'sources': [{
+        'name': 'Global',
+        'git_url': 'https://github.com/ok-oldking/ok-genshin-impact.git',
+        'pip_url': 'https://pypi.org/simple/'
+        },
         {
             'name': '阿里云',
-            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gf2.git',
+            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
             'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
         },
         {
             'name': '清华大学',
-            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gf2.git',
+            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
             'pip_url': 'https://pypi.tuna.tsinghua.edu.cn/simple'
         },
         {
             'name': '腾讯云',
-            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gf2.git',
+            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
             'pip_url': 'https://mirrors.cloud.tencent.com/pypi/simple'
         },
     ]},
@@ -117,6 +121,7 @@ config = {
     'trigger_tasks': [  # tasks to execute
         ["src.tasks.AutoPickTask", "AutoPickTask"],
         ["src.tasks.AutoDialogTask", "AutoDialogTask"],
+        ["src.tasks.AutoLoginTask", "AutoLoginTask"],
     ],
     'my_app': ['src.globals', 'Globals'],
 }
