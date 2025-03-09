@@ -52,6 +52,7 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                 self.click(play)
             elif self.in_world_or_dungeon():
                 self.log_info(f'Auto Quest Dialog Completed!', notify=not self.hwnd.visible and self.config.get("Send Notification when Dialog Completed"))
+                # self.executor.interaction.deactivate()
                 return
             elif self.find_one('dialog_black_screen'):
                 self.send_key('space')

@@ -34,43 +34,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: 📋 Get Changes between Tags
+        id: changes
+        uses: simbo/changes-between-tags-action@v1
+
       - name: Set UTF-8 encoding
         run: |
           set PYTHONIOENCODING=utf-8
           set PYTHONLEGACYWINDOWSSTDIO=utf-8
           echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
-          
-            - name: Get current tag
-        id: current_tag
-        run: echo "TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
-        shell: bash #Important, git describe is a bash command.
-
-      - name: Get previous tag
-        id: previous_tag
-        run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 $(git describe --tags --abbrev=0)^)
-          if [[ -z "$PREV_TAG" ]]; then
-            echo "PREV_TAG=First tag" >> $GITHUB_OUTPUT
-          else
-            echo "PREV_TAG=$PREV_TAG" >> $GITHUB_OUTPUT
-          fi
-        shell: bash
-
-      - name: Display tags
-        run: |
-          echo "Current Tag: ${{ steps.current_tag.outputs.TAG }}"
-          echo "Previous Tag: ${{ steps.previous_tag.outputs.PREV_TAG }}"
-        shell: bash
-
-      - name: Get changes
-        id: changes
-        run: |
-          if [[ "${{ steps.previous_tag.outputs.PREV_TAG }}" == "First tag" ]]; then
-              echo "changes=$(git log --pretty=format:'%h %s' ${{ steps.current_tag.outputs.TAG }})" >> $GITHUB_OUTPUT
-          else
-              echo "changes=$(git log --pretty=format:'%h %s' ${{ steps.previous_tag.outputs.PREV_TAG }}..${{ steps.current_tag.outputs.TAG }})" >> $GITHUB_OUTPUT
-          fi
-        shell: bash
 
       - name: Get tag name
         id: tagName
