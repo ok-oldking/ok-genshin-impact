@@ -44,35 +44,37 @@ jobs:
         id: tagName
         uses: olegtarasov/get-tag@v2.1.3
 
-      - name: Generate Changelog (Optional, but recommended)
+      - name: Get current tag
+        id: current_tag
+        run: echo "TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+        shell: bash #Important, git describe is a bash command.
+
+      - name: Get previous tag
+        id: previous_tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 "$(git describe --tags --abbrev=0)^")
+          if [[ -z "$PREV_TAG" ]]; then
+            echo "PREV_TAG=First tag" >> $GITHUB_OUTPUT
+          else
+            echo "PREV_TAG=$PREV_TAG" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Display tags
+        run: |
+          echo "Current Tag: ${{ steps.current_tag.outputs.TAG }}"
+          echo "Previous Tag: ${{ steps.previous_tag.outputs.PREV_TAG }}"
+        shell: bash
+
+      - name: Get changes
         id: changes
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const tag = ${{ steps.tagName.outputs.tag }};  // Access the tag name from the environment
-            console.log(`Generating changelog for tag: ${tag}`)
-            const response = await github.rest.repos.compareCommits({
-              owner: owner,
-              repo: repo,
-              base: "${{ github.event.before }}", // Previous commit
-              head: "${{ github.sha }}", // Current commit (tag)
-            });
-            
-            const commits = response.data.commits;
-            let changes = "";
-            
-            if (commits && commits.length > 0) {
-              changes += "Commits:\n";
-              commits.forEach(commit => {
-                const message = commit.commit.message.split('\n')[0]; // Get only the first line of the commit message
-                changes += `- ${message} (${commit.author.login})\n`;
-              });
-            } else {
-              changes = "No commits found between previous and current tag.";
-            }
-            
-            core.setOutput('changes', changes);
+        run: |
+          if [[ "${{ steps.previous_tag.outputs.PREV_TAG }}" == "First tag" ]]; then
+              echo "changes=$(git log --pretty=format:'%h %s' ${{ steps.current_tag.outputs.TAG }})" >> $GITHUB_OUTPUT
+          else
+              echo "changes=$(git log --pretty=format:'%h %s' ${{ steps.previous_tag.outputs.PREV_TAG }}..${{ steps.current_tag.outputs.TAG }})" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
 
       - name: Install dependencies
         run: |
