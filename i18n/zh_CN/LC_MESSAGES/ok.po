@@ -46,7 +46,7 @@ msgid "Auto Quest Dialog Need to Choose Manually!"
 msgstr "任务对话需要手动选择!"
 
 msgid "Auto Quest Dialog Completed!"
-msgstr "任务对话需已经结束!"
+msgstr "任务对话已经结束!"
 
 msgid "Send Notification when Dialog Completed"
 msgstr "任务对话结束发送通知"

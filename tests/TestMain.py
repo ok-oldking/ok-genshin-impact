@@ -14,7 +14,8 @@ class TestBattleBaseSerialization(TaskTestCase):
     def test_base(self):
         # Create a BattleReport object
         self.set_image('tests/images/main.png')
-        self.task.ensure_main()
+        trees = self.task.find_tree()
+        self.assertEqual(len(trees), 1)
 
 
 if __name__ == '__main__':
