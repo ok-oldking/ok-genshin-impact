@@ -1,15 +1,9 @@
 from os import path
 
 import cv2
-import onnxruntime
-
-import msgpack
 from PySide6.QtCore import Signal, QObject
-from PySide6.QtWidgets import QApplication
-from pip._internal.utils.misc import ensure_dir
 
 from ok import Config, Logger, get_path_relative_to_exe
-from ok import og
 
 logger = Logger.get_logger(__name__)
 
