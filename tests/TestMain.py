@@ -13,7 +13,7 @@ class TestBattleBaseSerialization(TaskTestCase):
 
     def test_base(self):
         # Create a BattleReport object
-        self.set_image('tests/images/main.png')
+        self.set_image('tests/images/tree.png')
         trees = self.task.find_tree()
         self.assertEqual(len(trees), 1)
 

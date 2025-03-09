@@ -49,11 +49,12 @@ class GenshinInteraction(BaseInteraction):
     def hwnd(self):
         return self.hwnd_window.hwnd
 
-    def do_send_key(self, key):
+    def do_send_key(self, key, down_time=0.02):
         vk_code = self.get_key_by_str(key)
         self.post(win32con.WM_KEYDOWN, vk_code, 0x1e0001)
         self.post(win32con.WM_CHAR, vk_code, 0x1e0001)
         self.post(win32con.WM_KEYUP, vk_code, 0xc01e0001)
+        time.sleep(down_time)
 
     def operate(self, fun, block=False):
         bg = not self.hwnd_window.is_foreground()
@@ -76,7 +77,7 @@ class GenshinInteraction(BaseInteraction):
     def send_key(self, key, down_time=0.02):
         logger.debug(f'GenshinInteraction send key {key} {down_time}')
         # self.do_send_key(key)
-        self.operate(lambda: self.do_send_key(key))
+        self.operate(lambda: self.do_send_key(key, down_time))
 
     def block_input(self):
         self.user32.BlockInput(True)
@@ -204,10 +205,12 @@ class GenshinInteraction(BaseInteraction):
         self.mouse_up()
 
     def activate(self):
+        # logger.debug(f'GenshinInteraction activate {self.hwnd}')
         self.hwnd_window.to_handle_mute = False
         self.post_interaction.activate()
 
     def deactivate(self):
+        # logger.debug('deactivate')
         self.post_interaction.deactivate()
         self.hwnd_window.to_handle_mute = True
 
