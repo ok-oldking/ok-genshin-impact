@@ -50,7 +50,7 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const tag = process.env.TAG_NAME;  // Access the tag name from the environment
+            const tag = ${{ steps.tagName.outputs.tag }};  // Access the tag name from the environment
             console.log(`Generating changelog for tag: ${tag}`)
             const response = await github.rest.repos.compareCommits({
               owner: owner,
