@@ -75,7 +75,8 @@ class GenshinInteraction(BaseInteraction):
 
     def send_key(self, key, down_time=0.02):
         logger.debug(f'GenshinInteraction send key {key} {down_time}')
-        self.operate(lambda: self.do_send_key(key))
+        self.do_send_key(key)
+        # self.operate(lambda: self.do_send_key(key))
 
     def block_input(self):
         self.user32.BlockInput(True)
