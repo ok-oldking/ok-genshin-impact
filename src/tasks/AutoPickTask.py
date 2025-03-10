@@ -1,6 +1,7 @@
 import time
 
 from qfluentwidgets import FluentIcon
+from torch.ao.nn.quantized.functional import threshold
 
 from ok import FindFeature, Logger, Box
 from ok import TriggerTask
@@ -63,11 +64,11 @@ class AutoPickTask(TriggerTask, BaseGiTask):
                 if self.debug:
                     self.screenshot('pick')
                 self.send_key("f")
-                self.sleep(0.03)
-                continue
+                self.sleep(0.02)
+                return True
 
     def find_black_list_dialogs(self, box):
-        return self.find_one(['chat_3_dots', 'pick_up_b_gear', 'pick_b_key'], box=box)
+        return self.find_one(['chat_3_dots', 'pick_up_b_gear', 'pick_b_key'], box=box, threshold=0.7)
 
 pick_white_list = ['pick_w_chest', 'pick_w_m_glass', 'pick_w_butterfly']
 

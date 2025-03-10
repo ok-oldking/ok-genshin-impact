@@ -6,7 +6,7 @@ from ok.test.TaskTestCase import TaskTestCase
 from src.tasks.BaseGiTask import BaseGiTask
 
 
-class TestBattleBaseSerialization(TaskTestCase):
+class TestMain(TaskTestCase):
     task_class = BaseGiTask
 
     config = config
