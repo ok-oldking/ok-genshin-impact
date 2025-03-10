@@ -69,8 +69,9 @@ class GenshinInteraction(BaseInteraction):
         except:
             logger.error(f'operate exception')
         if bg:
-            win32api.SetCursorPos(self.cursor_position)
             self.deactivate()
+            time.sleep(0.02)
+            win32api.SetCursorPos(self.cursor_position)
             if block:
                 self.unblock_input()
 
@@ -132,46 +133,24 @@ class GenshinInteraction(BaseInteraction):
             win32con.WM_MBUTTONUP, win32con.MK_MBUTTON, long_position
         )
 
-    def scroll(self, x, y, scroll_amount):
-        # self.activate()
-        # Calculate the wParam
-        # Positive scroll_amount indicates scroll up, negative is scroll down
-        logger.debug(f'gi scroll {x}, {y}, {scroll_amount}')
+    def do_scroll(self, x, y , scroll_amount):
+        if scroll_amount < 0:
+            sign = -1
+        elif scroll_amount > 0:
+            sign = 1
+        else:
+            sign = 0
         abs_x, abs_y = self.capture.get_abs_cords(x, y)
         click_pos = win32api.MAKELONG(x, y)
-        current_position = win32api.GetCursorPos()
-        self.activate()
-        # Block input using BlockInput API from user32.dll
-        self.block_input()
-        try:
-            # win32api.SetCursorPos((abs_x, abs_y))
-            # time.sleep(0.0001)
+        logger.debug(f'do_scroll {x}, {y}, {click_pos} {scroll_amount}')
+        win32api.SetCursorPos((abs_x, abs_y))
+        time.sleep(0.02)
+        for i in range(abs(scroll_amount)):
+            mouse.wheel(sign)
+        time.sleep(0.02)
 
-            # self.post(win32con.WM_MOUSEMOVE, 0, click_pos)
-            import mouse
-            time.sleep(0.2)
-            mouse.wheel(1)
-            # wParam = win32api.MAKELONG(0, win32con.WHEEL_DELTA * scroll_amount)
-            # Send the WM_MOUSEWHEEL message
-            # self.post(win32con.WM_MOUSEWHEEL, wParam, click_pos)
-            # time.sleep(0.008) # gf2
-            time.sleep(0.2)
-            # win32api.SetCursorPos(current_position)
-            # time.sleep(0.02)
-        except Exception as e:
-            logger.error(f'Failed to scroll {x}, {y}, {click_pos} ', e)
-        finally:
-            self.unblock_input()
-            self.deactivate()
-            win32api.SetCursorPos(current_position)
-            time.sleep(0.0001)
-
-        # wParam = win32api.MAKELONG(0, win32con.WHEEL_DELTA * scroll_amount)
-        # # Send the WM_MOUSEWHEEL message
-        # time.sleep(0.02)
-        # self.post(win32con.WM_MOUSEWHEEL, wParam, long_position)
-        # time.sleep(0.02)
-        # self.deactivate()
+    def scroll(self, x, y, scroll_amount):
+        self.operate(lambda: self.do_scroll(x, y, scroll_amount), block=True)
 
     def post(self, message, wParam=0, lParam=0):
         win32gui.PostMessage(self.hwnd, message, wParam, lParam)

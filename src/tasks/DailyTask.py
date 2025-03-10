@@ -107,6 +107,8 @@ class DailyTask(BaseGiTask):
 
 
     def run(self):
+        self.scroll_relic(16)
+        return
         return self.log_info(f'Developing', notify=True)
         self.sleep(2)
 

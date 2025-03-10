@@ -5,7 +5,7 @@ from typing import List
 import cv2
 import numpy as np
 
-from ok import BaseTask, find_boxes_within_boundary, find_boxes_by_name, Box, calculate_color_percentage, og
+from ok import BaseTask, find_boxes_within_boundary, find_boxes_by_name, Box, calculate_color_percentage, og, Feature
 from ok import Logger
 
 logger = Logger.get_logger(__name__)
@@ -24,7 +24,7 @@ class BaseGiTask(BaseTask):
 
     def click(self, x: int | Box | List[Box] = -1, y=-1, move_back=False, name=None, interval=-1, move=True,
               down_time=0.01, after_sleep=0):
-        super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.02)
+        super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.02, after_sleep=after_sleep)
 
 
 
@@ -132,6 +132,58 @@ class BaseGiTask(BaseTask):
 
         return sorted(detections, key=lambda detection: detection.confidence, reverse=True)
 
+    def open_book(self):
+        self.send_key('f1', after_sleep=2)
+
+    def go_to_relic(self, n):
+        self.ensure_main()
+        self.open_book()
+        self.click_relative(0.16, 0.42, after_sleep=1)
+        self.click_relative(0.47, 0.2, after_sleep=0.5)
+        self.click_relative(0.46, 0.31, after_sleep=0.5)
+
+    def scroll_relic(self, n):
+        if n > 4:
+            distance = self.measure_scroll()
+            self.sleep(1)
+            book_locations = self.find_feature('book_location', horizontal_variance=0.05, vertical_variance=1)
+            distance3 = book_locations[-1].y - book_locations[0].y
+            scroll_delta_per_row = -1 * round(distance3 / 3 / distance)
+            row_to_scroll = n - 4
+            logger.debug(f"scroll_relic book_locations:{len(book_locations)} distance3:{distance3} scroll_delta_per_row:{scroll_delta_per_row}")
+            self.scroll_relative(0.48, 0.32, row_to_scroll * scroll_delta_per_row + 1)
+            self.sleep(1)
+            n = 4
+        book_locations = self.find_feature('book_location', horizontal_variance=0.05, vertical_variance=1)
+        self.click(book_locations[n-1])
+
+
+
+
+
+    def measure_scroll(self):
+        last_box = self.box_of_screen(0.39, 0.66, 0.50, 0.72)
+        last_crop = last_box.crop_frame(self.frame)
+
+        source_template = Feature(last_crop, last_box.x, last_box.y)
+
+        self.scroll_relative(0.48, 0.32, -1)
+        self.sleep(0.5)
+
+        target = self.find_one('target_box', box=self.box_of_screen(0.38, 0.22, 0.50, 0.72), template=source_template, threshold=0.95)
+        scroll_distance =  last_box.y - target.y
+        self.log_info(f'measure_scroll: {scroll_distance}')
+        if scroll_distance < 1:
+            raise Exception('Scroll Failed')
+        return scroll_distance
+
+    def ensure_main(self):
+        start = time.time()
+        while not self.in_world() and time.time() - start < 10:
+            self.send_key('esc')
+            self.sleep(1.5)
+        if not self.in_world():
+            raise Exception('Enter Main Page Failed!')
 
 
 white_color = {
