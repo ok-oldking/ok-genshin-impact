@@ -31,6 +31,14 @@ class AutoLoginTask(TriggerTask, BaseGiTask):
             self.log_info(f'login click center')
             self.click_relative(0.5,0.5, after_sleep=3)
             return
+        if self.find_one('monthly_card'):
+            self.log_info(f'monthly_card click center')
+            self.click_relative(0.5,0.5, after_sleep=3)
+            return
+        if self.find_one('monthly_card_diamond'):
+            self.log_info(f'monthly_card click center')
+            self.click_relative(0.5,0.6, after_sleep=3)
+            return
 
 
 
