@@ -5,7 +5,7 @@ from torch.ao.nn.quantized.functional import threshold
 
 from ok import FindFeature, Logger, Box
 from ok import TriggerTask
-from src.tasks.BaseGiTask import BaseGiTask, white_color
+from src.tasks.BaseGiTask import BaseGiTask, white_color, pick_up_text_green_color, pick_up_text_blue_color
 
 logger = Logger.get_logger(__name__)
 
@@ -34,13 +34,18 @@ class AutoPickTask(TriggerTask, BaseGiTask):
                 if wait_start == 0 or time.time() - wait_start < 0.2:
                     white_percent = self.calculate_color_percentage(white_color, text_zone)
                     if white_percent < 0.05:
-                        if wait_start == 0:
-                            wait_start = time.time()
-                        if self.debug:
-                            self.log_debug(f'wait for text {white_percent}')
-                            # self.screenshot('wait_text')
-                        self.next_frame()
-                        continue
+                        green_text_percent = self.calculate_color_percentage(pick_up_text_green_color, text_zone)
+                        if green_text_percent < 0.05:
+                            blue_text_percent = self.calculate_color_percentage(pick_up_text_blue_color, text_zone)
+                            self.log_debug(f'white_percent={white_percent}, green_text_percent={green_text_percent}, blue_text_percent={blue_text_percent}')
+                            if blue_text_percent < 0.05:
+                                if wait_start == 0:
+                                    wait_start = time.time()
+                                if self.debug:
+                                    self.log_debug(f'wait for text {white_percent}')
+                                    # self.screenshot('wait_text')
+                                self.next_frame()
+                                continue
                 icon_zone = button_f.copy(x_offset=button_f.width * 2.2, width_offset=button_f.width * 0.3, y_offset=-button_f.height * 0.15, height_offset=button_f.height * 0.3,
                               name='choice')
 

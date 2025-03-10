@@ -140,6 +140,24 @@ white_color = {
     'b': (245, 255)  # Blue range
 }
 
+pick_up_text_green_color = {
+    'r': (162, 182),  # Red range
+    'g': (245, 255),  # Green range
+    'b': (59, 75)  # Blue range
+}
+
+pick_up_text_blue_color = {
+    'r': (59, 79),  # Red range
+    'g': (245, 255),  # Green range
+    'b': (245, 255)  # Blue range
+}
+
+pick_up_text_purple_color = {
+    'r': (162, 182),  # Red range
+    'g': (245, 255),  # Green range
+    'b': (59, 75)  # Blue range
+}
+
 less_white_color = {
     'r': (210, 250),  # Red range
     'g': (210, 250),  # Green range
