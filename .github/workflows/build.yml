@@ -92,12 +92,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.OK_GH }} #Important: use a token for the other repo
         with:
-          owner: ok-oldking # Replace with the owner of the target repo
-          repo: ok-genshin-impact   # Replace with the name of the target repo
+          repository: ok-oldking/ok-genshin-impact
           tag_name: ${{ steps.tagName.outputs.tag }}
+          token: ${{ secrets.OK_GH }}
           name: ok-gi-${{ steps.tagName.outputs.tag }}
           body: |
-            OK-GI release.
+            OK-Genshin-Impact release.
             Updates：
             ${{ steps.changes.outputs.changes }}
           files: |
