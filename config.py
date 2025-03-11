@@ -70,7 +70,8 @@ config = {
         'require_bg': True
     },
     'start_timeout': 120,  # default 60
-    'wait_until_before_delay': 2,  # default 1 , for wait_until() function
+    'wait_until_before_delay': 0,  # default 1 , for wait_until() function
+    'wait_until_check_delay': 0,
     # 'template_matching': {
     #     'coco_feature_json': os.path.join('assets', 'result.json'),
     #     'default_horizontal_variance': 0.003,
@@ -116,6 +117,7 @@ config = {
     'version': version,
     'onetime_tasks': [  # tasks to execute
         ["src.tasks.DailyTask", "DailyTask"],
+        ["src.tasks.FarmRelicTask", "FarmRelicTask"],
     ],
     'trigger_tasks': [  # tasks to execute
         ["src.tasks.AutoPickTask", "AutoPickTask"],

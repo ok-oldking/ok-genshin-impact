@@ -10,7 +10,18 @@ from src.tasks.BaseGiTask import BaseGiTask
 logger = Logger.get_logger(__name__)
 
 
-class BaseGiTask(BaseGiTask):
+class FarmRelicTask(BaseGiTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.name = "Farm Relic Task"
+        self.description = "Farm Relic Task"
+        self.default_config.update({
+            'Relic Dungeon To Farm': 16
+        })
+        self.config_description = {
+            'Relic Dungeon To Farm': 'Which Relic dungeon to Farm, in the F1 Book (1-17)',
+        }
+
+    def run(self):
+        return self.walk_to_f()

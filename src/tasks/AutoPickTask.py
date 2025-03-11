@@ -25,7 +25,7 @@ class AutoPickTask(TriggerTask, BaseGiTask):
         # self.logger.debug("trigger task2")
         wait_start = 0
         if self.in_world_or_dungeon():
-            while button_f := self.find_one("f", vertical_variance=0.14):
+            while button_f := self.find_f():
                 percent = self.calculate_color_percentage(white_color, button_f)
                 if percent < 0.75:
                     self.next_frame()
@@ -71,6 +71,8 @@ class AutoPickTask(TriggerTask, BaseGiTask):
                 self.send_key("f")
                 self.sleep(0.02)
                 return True
+
+
 
     def find_black_list_dialogs(self, box):
         return self.find_one(['chat_3_dots', 'pick_up_b_gear', 'pick_b_key'], box=box, threshold=0.7)

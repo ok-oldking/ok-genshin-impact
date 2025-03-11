@@ -58,14 +58,14 @@ class GenshinInteraction(BaseInteraction):
 
     def operate(self, fun, block=False):
         bg = not self.hwnd_window.is_foreground()
-        current_position = None
+        result = None
         if bg:
             if block:
                 self.block_input()
             self.cursor_position = win32api.GetCursorPos()
             self.activate()
         try:
-            fun()
+            result = fun()
         except:
             logger.error(f'operate exception')
         if bg:
@@ -74,6 +74,7 @@ class GenshinInteraction(BaseInteraction):
             win32api.SetCursorPos(self.cursor_position)
             if block:
                 self.unblock_input()
+        return result
 
     def send_key(self, key, down_time=0.02):
         logger.debug(f'GenshinInteraction send key {key} {down_time}')
@@ -94,6 +95,15 @@ class GenshinInteraction(BaseInteraction):
             self.post_interaction.activate()
             self.post_interaction.send_key_down(key)
             win32api.SetCursorPos(current_position)
+
+    def do_send_key_down(self, key):
+        vk_code = self.get_key_by_str(key)
+        self.post(win32con.WM_KEYDOWN, vk_code, 0x1e0001)
+        self.post(win32con.WM_CHAR, vk_code, 0x1e0001)
+
+    def do_send_key_up(self, key):
+        vk_code = self.get_key_by_str(key)
+        self.post(win32con.WM_KEYUP, vk_code, 0xc01e0001)
 
     def send_key_up(self, key):
         logger.debug(f'send_key_up {key}')
@@ -150,7 +160,7 @@ class GenshinInteraction(BaseInteraction):
         time.sleep(0.02)
 
     def scroll(self, x, y, scroll_amount):
-        self.operate(lambda: self.do_scroll(x, y, scroll_amount), block=True)
+        return self.operate(lambda: self.do_scroll(x, y, scroll_amount), block=True)
 
     def post(self, message, wParam=0, lParam=0):
         win32gui.PostMessage(self.hwnd, message, wParam, lParam)

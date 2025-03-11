@@ -16,6 +16,9 @@ class BaseGiTask(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def find_f(self):
+        return self.find_one("f", vertical_variance=0.14)
+
     def in_world(self):
         return self.find_one('top_left_paimon')
 
@@ -26,7 +29,31 @@ class BaseGiTask(BaseTask):
               down_time=0.01, after_sleep=0):
         super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.02, after_sleep=after_sleep)
 
+    def do_walk_to_f(self, time_out=5):
+        self.do_send_key_down('w')
+        if self.wait_until(self.find_f, time_out=time_out):
+            self.log_info('found f while walking')
+            self.do_send_key_up('w')
+            self.do_send_key_down('f')
+            self.do_send_key_up('f')
+            found = True
+        else:
+            self.do_send_key_up('w')
+            found = False
+        self.sleep(0.02)
+        return found
 
+    def do_send_key_down(self, key):
+        self.executor.interaction.do_send_key_down(key)
+
+    def do_send_key_up(self, key):
+        self.executor.interaction.do_send_key_up(key)
+
+    def walk_to_f(self, time_out=10):
+        if self.find_f():
+            self.send_key('f')
+            return True
+        self.executor.interaction.operate(self.do_walk_to_f, block=True)
 
     def find_choices(self, box, horizontal=0, vertical=0, limit=1, threshold=0.2) -> List[Box]:
         result = []
