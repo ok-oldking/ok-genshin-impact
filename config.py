@@ -72,6 +72,7 @@ config = {
     'start_timeout': 120,  # default 60
     'wait_until_before_delay': 0,  # default 1 , for wait_until() function
     'wait_until_check_delay': 0,
+    'wait_until_settle_time': 0,
     # 'template_matching': {
     #     'coco_feature_json': os.path.join('assets', 'result.json'),
     #     'default_horizontal_variance': 0.003,

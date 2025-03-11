@@ -4,6 +4,7 @@ from typing import List
 
 import cv2
 import numpy as np
+from torch.ao.nn.quantized.functional import threshold
 
 from ok import BaseTask, find_boxes_within_boundary, find_boxes_by_name, Box, calculate_color_percentage, og, Feature
 from ok import Logger
@@ -23,24 +24,31 @@ class BaseGiTask(BaseTask):
         return self.find_one('top_left_paimon')
 
     def in_world_or_dungeon(self):
-        return self.find_one('top_right_bag')
+        return self.in_world() or self.find_one('top_left_dungeon')
 
     def click(self, x: int | Box | List[Box] = -1, y=-1, move_back=False, name=None, interval=-1, move=True,
               down_time=0.01, after_sleep=0):
         super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.02, after_sleep=after_sleep)
 
-    def do_walk_to_f(self, time_out=5):
+    def do_walk_to_f(self, time_out=5, run=True):
         self.do_send_key_down('w')
+        if run:
+            self.sleep(0.1)
+            self.executor.interaction.do_mouse_down(btn='right')
         if self.wait_until(self.find_f, time_out=time_out):
             self.log_info('found f while walking')
+            self.executor.interaction.do_send_key('f')
+            if run:
+                self.executor.interaction.do_mouse_up(btn='right')
             self.do_send_key_up('w')
-            self.do_send_key_down('f')
-            self.do_send_key_up('f')
             found = True
         else:
+            if run:
+                self.executor.interaction.do_mouse_up(btn='right')
             self.do_send_key_up('w')
             found = False
-        self.sleep(0.02)
+        if found:
+            self.sleep(1)
         return found
 
     def do_send_key_down(self, key):
@@ -49,11 +57,11 @@ class BaseGiTask(BaseTask):
     def do_send_key_up(self, key):
         self.executor.interaction.do_send_key_up(key)
 
-    def walk_to_f(self, time_out=10):
+    def walk_to_f(self, time_out=10, run=True):
         if self.find_f():
             self.send_key('f')
             return True
-        self.executor.interaction.operate(self.do_walk_to_f, block=True)
+        return self.executor.interaction.operate(lambda: self.do_walk_to_f(time_out=time_out, run=run), block=True)
 
     def find_choices(self, box, horizontal=0, vertical=0, limit=1, threshold=0.2) -> List[Box]:
         result = []
@@ -162,14 +170,15 @@ class BaseGiTask(BaseTask):
     def open_book(self):
         self.send_key('f1', after_sleep=2)
 
-    def go_to_relic(self, n):
+    def go_to_relic(self):
         self.ensure_main()
         self.open_book()
         self.click_relative(0.16, 0.42, after_sleep=1)
         self.click_relative(0.47, 0.2, after_sleep=0.5)
         self.click_relative(0.46, 0.31, after_sleep=0.5)
 
-    def scroll_relic(self, n):
+    def scroll_into_relic(self, n):
+        self.go_to_relic()
         if n > 4:
             distance = self.measure_scroll()
             self.sleep(1)
@@ -183,10 +192,14 @@ class BaseGiTask(BaseTask):
             n = 4
         book_locations = self.find_feature('book_location', horizontal_variance=0.05, vertical_variance=1)
         self.click(book_locations[n-1])
+        self.wait_confirm_dialog(btn='btn_teleport')
+        self.wait_world()
+        self.walk_to_f()
+        self.wait_confirm_dialog()
+        self.wait_confirm_dialog()
 
-
-
-
+    def wait_world(self, time_out=60):
+        self.wait_until(self.in_world, time_out=time_out, raise_if_not_found=True)
 
     def measure_scroll(self):
         last_box = self.box_of_screen(0.39, 0.66, 0.50, 0.72)
@@ -212,6 +225,22 @@ class BaseGiTask(BaseTask):
         if not self.in_world():
             raise Exception('Enter Main Page Failed!')
 
+    def confirm_dialog(self, btn='btn_ok'):
+        btn_ok = self.find_feature(btn, box='bottom', threshold=0.9)
+        if not btn_ok:
+            raise Exception('Can not find OK button!')
+        if len(btn_ok) > 1:
+            raise Exception('Found more than one OK button!')
+        self.click(btn_ok)
+        return btn_ok
+
+    def wait_confirm_dialog(self, btn='btn_ok', time_out=10):
+        btn_ok = self.wait_feature(btn, box='bottom', raise_if_not_found=True, time_out=time_out, settle_time=1,
+                                   threshold=0.9)
+        self.click(btn_ok, after_sleep=1)
+
+
+number_re = re.compile(r'^\d+$')
 
 white_color = {
     'r': (245, 255),  # Red range

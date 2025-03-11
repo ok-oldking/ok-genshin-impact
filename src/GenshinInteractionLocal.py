@@ -7,36 +7,20 @@ import win32api
 import win32con
 import win32gui
 
-from ok import Logger, BaseInteraction, BaseCaptureMethod, PostMessageInteraction, PyDirectInteraction, vk_key_dict
+from ok import Logger, BaseInteraction, BaseCaptureMethod, PostMessageInteraction, PyDirectInteraction, vk_key_dict, \
+    MOUSEINPUT, INPUT, SendInput
 
 logger = Logger.get_logger(__name__)
 
+import ctypes
 
-# Define the MOUSEINPUT structure
-class MOUSEINPUT(ctypes.Structure):
-    _fields_ = [("dx", ctypes.c_long),
-                ("dy", ctypes.c_long),
-                ("mouseData", ctypes.c_ulong),
-                ("dwFlags", ctypes.c_ulong),
-                ("time", ctypes.c_ulong),
-                ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong))]
-
-
-# Define the INPUT structure
-class INPUT(ctypes.Structure):
-    _fields_ = [("type", ctypes.c_ulong),
-                ("mi", MOUSEINPUT)]
-
-
-# Define the SendInput function
-SendInput = ctypes.windll.user32.SendInput
-SendInput.argtypes = [ctypes.c_uint, ctypes.POINTER(INPUT), ctypes.c_int]
-SendInput.restype = ctypes.c_uint
 
 class GenshinInteraction(BaseInteraction):
 
     def __init__(self, capture: BaseCaptureMethod, hwnd_window):
         super().__init__(capture)
+        from pynput.mouse import Controller
+        self.mouse = Controller()
         self.post_interaction = PostMessageInteraction(capture, hwnd_window)
         self.pydirectinput_interaction = PyDirectInteraction(capture, hwnd_window)
         self.pydirectinput_interaction.check_clickable = False
@@ -52,9 +36,15 @@ class GenshinInteraction(BaseInteraction):
     def do_send_key(self, key, down_time=0.02):
         vk_code = self.get_key_by_str(key)
         self.post(win32con.WM_KEYDOWN, vk_code, 0x1e0001)
-        self.post(win32con.WM_CHAR, vk_code, 0x1e0001)
+        if down_time > 0.1:
+            time.sleep(down_time)
+        else:
+            self.post(win32con.WM_CHAR, vk_code, 0x1e0001)
         self.post(win32con.WM_KEYUP, vk_code, 0xc01e0001)
-        time.sleep(down_time)
+        if down_time <= 0.1:
+            time.sleep(down_time)
+        else:
+            time.sleep(0.02)
 
     def operate(self, fun, block=False):
         bg = not self.hwnd_window.is_foreground()
@@ -66,8 +56,8 @@ class GenshinInteraction(BaseInteraction):
             self.activate()
         try:
             result = fun()
-        except:
-            logger.error(f'operate exception')
+        except Exception as e:
+            logger.error(f'operate exception', e)
         if bg:
             self.deactivate()
             time.sleep(0.02)
@@ -211,7 +201,19 @@ class GenshinInteraction(BaseInteraction):
     def click(self, x=-1, y=-1, move_back=False, name=None, down_time=0.02, move=True):
         self.operate(lambda: self.do_click(x, y, down_time=down_time), block=True)
 
-    def do_click(self, x=-1, y=-1, move_back=False, name=None, down_time=0.02, move=True):
+    def do_middle_click(self, x=-1, y=-1, move_back=False, name=None, down_time=0.02):
+        abs_x, abs_y = self.capture.get_abs_cords(x, y)
+        click_pos = win32api.MAKELONG(x, y)
+        logger.debug(f'click {x}, {y}, {click_pos} {down_time}')
+        win32api.SetCursorPos((abs_x, abs_y))
+        time.sleep(0.001)
+        self.post(win32con.WM_MBUTTONDOWN, win32con.MK_LBUTTON, click_pos
+                  )
+        self.post(win32con.WM_MBUTTONUP, 0, click_pos
+                  )
+        time.sleep(down_time)
+
+    def do_click(self, x=-1, y=-1, move_back=False, name=None, down_time=0.02, move=True, btn=None):
         abs_x, abs_y = self.capture.get_abs_cords(x, y)
         click_pos = win32api.MAKELONG(x, y)
         logger.debug(f'click {x}, {y}, {click_pos} {down_time}')
@@ -222,6 +224,29 @@ class GenshinInteraction(BaseInteraction):
         self.post(win32con.WM_LBUTTONUP, 0, click_pos
                   )
         time.sleep(down_time)
+
+    def do_mouse_down(self, x=-1, y=-1, move_back=False, name=None, move=True, btn=None):
+        if btn is None:
+            btn = win32con.WM_LBUTTONDOWN
+        elif btn == 'right':
+            btn = win32con.WM_RBUTTONDOWN
+        abs_x, abs_y = self.capture.get_abs_cords(x, y)
+        click_pos = win32api.MAKELONG(x, y)
+        logger.debug(f'do_mouse_down {x}, {y}, {click_pos}')
+        win32api.SetCursorPos((abs_x, abs_y))
+        time.sleep(0.001)
+        self.post(btn, win32con.MK_LBUTTON, click_pos
+                  )
+
+    def do_mouse_up(self, x=-1, y=-1, move_back=False, name=None, move=True, btn=None):
+        if btn is None:
+            btn = win32con.WM_LBUTTONUP
+        elif btn == 'right':
+            btn = win32con.WM_RBUTTONUP
+        click_pos = win32api.MAKELONG(x, y)
+        logger.debug(f'do_mouse_up {x}, {y}, {click_pos}')
+        self.post(btn, 0, click_pos
+                  )
 
     def right_click(self, x=-1, y=-1, move_back=False, name=None):
         super().right_click(x, y, name=name)
@@ -272,6 +297,6 @@ class GenshinInteraction(BaseInteraction):
             dy: The number of pixels to move the mouse vertically (positive for down, negative for up).
         """
 
-        mi = MOUSEINPUT(dx, dy, 0, 0x0001, 0, None)
+        mi = MOUSEINPUT(dx, dy, 0, 1, 0, None)
         i = INPUT(0, mi)  # type=0 indicates a mouse event
         SendInput(1, ctypes.pointer(i), ctypes.sizeof(INPUT))
