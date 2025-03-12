@@ -1,7 +1,6 @@
 import re
 import time
 
-import mouse
 import win32api
 import win32con
 import win32gui
@@ -21,18 +20,6 @@ class DailyTask(BaseGiTask):
         self.default_config.update({
 
         })
-
-    def mouse_move_test(self):
-        self.executor.interaction.block_input()
-        self.executor.interaction.activate()
-        for i in range(10):
-            # self.executor.interaction.move_mouse_by(100)
-
-            move_mouse_relative(100,0)
-            # win32api.SetCursorPos((new_x, new_y))
-            time.sleep(0.1)
-        self.executor.interaction.deactivate()
-        self.executor.interaction.unblock_input()
 
     def alt_click(self, x, y):
         self.send_key_down('alt')
@@ -56,55 +43,6 @@ class DailyTask(BaseGiTask):
         self.sleep(5)
         self.executor.interaction.deactivate()
         self.executor.interaction.unblock_input()
-
-    def test_tree(self):
-        start =time.time()
-        self.executor.interaction.block_input()
-        self.executor.interaction.activate()
-        found_tree = False
-        change_count = 0
-        step = 100
-        direction = 1
-        abs_distance = self.width
-        while time.time() - start < 20:
-            d_start = time.time()
-            trees = self.find_tree()
-            self.draw_boxes(boxes=trees)
-            if trees:
-                distance = trees[0].center()[0] - self.width / 2
-                abs_distance = abs(distance)
-            else:
-                distance = 1
-            if trees:
-                self.log_debug(f'trees: {trees[0]} cost:{time.time() - d_start} {trees[0].center()[0]} {self.width} distance:{distance}')
-
-            new_direction = -1 if distance < 0 else 1
-
-            if trees and direction != new_direction:
-                direction = new_direction
-                step = max(1, int(step / 2))
-                change_count += 1
-                self.log_debug(f'turning {direction} to {new_direction}')
-
-            if change_count >= 4:
-                self.log_info('turned a lot of trees, break')
-                break
-            if not trees and abs_distance <= self.width_of_screen(0.01):
-                logger.info('found and lost tree break')
-                break
-            move_mouse_relative(direction * step, 0)
-            self.next_frame()
-        self.executor.interaction.deactivate()
-        self.executor.interaction.unblock_input()
-        self.sleep(2)
-        trees = self.find_tree()
-        self.draw_boxes(boxes=trees)
-        if trees:
-            self.log_info(f'trees: {trees[0]} {self.width/2 - trees[0].center()[0]}')
-        else:
-            self.log_info('no trees')
-
-
 
     def run(self):
         self.scroll_relic(16)
