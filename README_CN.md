@@ -1,87 +1,81 @@
 <div align="center">
   <h1 align="center">
-    <img src="icon.png" width="200"/>
+    <img src="icon.png" width="200" alt="OK-GI Logo"/>
     <br/>
-      OK-GI
-  </h1> 
-<h3><i>Automation for Genshin Impact using Computer Vision and Win32API</i></h3>
+    OK-GI
+  </h1>
+  <h3><i>使用计算机视觉和Win32API进行《原神》自动化</i></h3>
 </div>
 
-![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
-[![GitHub release (with filter)](https://img.shields.io/github/v/release/ok-oldking/ok-genshin-impact)](https://github.com/ok-oldking/ok-genshin-impact/releases)
-[![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-genshin-impact/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![Static Badge](https://img.shields.io/badge/Discord-blue)](https://discord.gg/Q8utYcPQA3)
+[![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://www.microsoft.com/en-us/windows/)
+[![GitHub Release](https://img.shields.io/github/v/release/ok-oldking/ok-genshin-impact)](https://github.com/ok-oldking/ok-genshin-impact/releases)
+[![Downloads](https://img.shields.io/github/downloads/ok-oldking/ok-genshin-impact/total)](https://github.com/ok-oldking/ok-genshin-impact/releases)
+[![Discord](https://img.shields.io/badge/Discord-加入社区-blue)](https://discord.gg/Q8utYcPQA3)
+[![QQ频道](https://img.shields.io/badge/QQ频道-加入频道-blue)](https://pd.qq.com/s/e2wvbypn7)
 
-### English | [简体中文](README_cn.md)
+**语言:** [English](README.md) | [简体中文](README_CN.md)
 
-It's free to use, and will be opensourced in the future.
+**免费使用，未来开源。**
+[⭐️ Star on GitHub](https://github.com/ok-oldking/ok-genshin-impact)
 
-![img_4.png](readmes/img_4.png)
+![OK-GI Demo](readmes/img_4.png)
 
-## Key Features
+## 主要特性
 
-* Can Run while the Game is in the Background.
-* One Press Clear All Daily Tasks and Relic Domains
-* Auto Skip Dialogs in Quests, Send Notification when Done
-* Auto Pick-up (Butterflies, Relics, Chests etc)
-* Supports All Game Languages
+* **后台自动化:** 游戏在后台时也可运行任务, 无需多用户远程。
+* **一键日常和秘境清理:** 高效完成日常任务和圣遗物秘境。
+* **自动跳过任务对话:** 自动跳过对话并在完成后接收通知。
+* **自动拾取物品:** 自动拾取晶蝶、圣遗物、宝箱等, 无需配置黑白名单。
+* **多语言支持:** 兼容所有游戏语言。
 
-### Usage (Run from Compiled .exe)
+## 开始使用
 
-* Download `ok-gi.7z` from the latest [releases](https://github.com/ok-oldking/ok-genshin-impact/releases)
-* Extract and double-click the `ok-gi.exe`
+### 使用已编译的可执行文件 (.exe)
 
-### Usage (Run from Python Source Code)
+1. 从[发布页面](https://github.com/ok-oldking/ok-genshin-impact/releases)下载最新的 `ok-gi.7z` 压缩包。
+2. 解压压缩包并双击 `ok-gi.exe`。
 
-Use Python 3.12, other versions might work but are not tested.
+### 从源代码运行 (Python)
 
-```
-git clone https://github.com/ok-oldking/ok-wuthering-waves
-pip install -r requirements.txt #install python dependencies
-python main.py # run the python, must start with admin privillege
-```
+1. 确保已安装 Python 3.12。
+2. 克隆仓库: `git clone https://github.com/ok-oldking/ok-genshin-impact`
+3. 安装依赖项: `pip install -r requirements.txt`
+4. 以管理员权限运行脚本: `python main.py`
 
-### Must Set Game Settings
+## 关于游戏后台运行的说明
 
-* Turn Off Auto HDR and Optimization for windowed games
-  ![img.png](readmes/img.png)
+1. **游戏和系统限制：**
+    * 由于《原神》和 Windows 操作系统本身的固有局限性，当您玩其他游戏（例如《鸣潮》，它会锁定您的鼠标位置）时，后台执行是不兼容的。
+2. **鼠标和键盘锁定：**
+    * 当任务需要游戏内角色移动或转向时，您的鼠标和键盘将被暂时锁定。这是《原神》在后台运行时所必需的。如果您在前台玩《原神》，则不会发生锁定。
 
-* Do Not use Fullscreen mode, use Borderless or Windowed
-  ![img_1.png](readmes/img_1.png)
+## 重要游戏设置
 
-* Use Game's Default Brightness
-  ![img_2.png](readmes/img_2.png)
+* **禁用自动 HDR 和窗口化游戏优化:**
+  ![Disable HDR](readmes/img.png)
+* **使用无边框或窗口模式:** 不支持全屏模式。
+  ![Window Mode](readmes/img_1.png)
+* **使用默认游戏亮度:**
+  ![Default Brightness](readmes/img_2.png)
+* **禁用外部图形滤镜:** 请勿使用 Nvidia/AMD 游戏滤镜或鲜艳度/HDR 效果。
+  ![Disable Filters](readmes/img_3.png)
 
-* Do Not use Nvidia or AMD's Game filter/Vibrance/HDR effects
-  ![img_3.png](readmes/img_3.png)
+## 常见问题 (FAQ)
 
-### FAQ
+1. **解压问题:** 将压缩包解压到仅包含英文字符的目录中。
+2. **杀毒软件干扰:** 将下载和解压目录添加到您的杀毒软件/Windows Defender 白名单中。
+3. **显示设置:** 禁用 Windows HDR、护眼模式和自动颜色管理。使用默认游戏亮度并禁用外部叠加层 (FPS、GPU 信息)。
+4. **自定义按键绑定:** 暂不支持任何自定义按键绑定，请使用默认的 F、E、Q、F1 等。
+5. **版本过旧:** 确保您使用的是最新版本的 OK-GI。
+6. **性能:** 在游戏中保持稳定的 60 FPS，如果需要，降低分辨率。
+7. **进一步帮助:** 如果问题仍然存在，请提交错误报告。
 
-1. Do not extract in a directory with non-English characters.
-2. Add the download and extraction directories to the antivirus software or Windows Defender whitelist, then extract the
-   files again.
-3. You may need to turn off Windows HDR, eye protection low blue light mode, and automatic application color management
-   in advanced display settings. Use default brightness for games, disable all features that change game colors, like
-   Nvidia/AMD game filters/sharpening, and close any overlays displaying FPS, GPU information, etc.
-4. If you are not using the default QER keys, change the keys in the ok-ww settings. Mouse side buttons are not
-   supported as shortcuts; otherwise, they will only perform basic attacks.
-5. If OK-GI is not updated to the latest version, update to the latest version.
-6. Ensure the game can run stably at 60fps
-7. If you still have issues, submit a BUG report.
+## 免责声明
 
-# Disclaimer
+本软件是《原神》的外部自动化工具，仅通过游戏现有的用户界面进行交互。它符合所有适用的法律和法规。
 
-This software is an external tool designed to automate the gameplay of “Genshin Impact.” It interacts with the game
-solely through the existing user interface and complies with relevant laws and regulations. The package aims to simplify
-user interaction with the game without disrupting game balance or providing any unfair advantages. It does not modify
-any game files or code.
+本项目开源且免费，仅供个人学习和交流使用。严禁用于商业用途或盈利活动。开发者保留对本项目的解释权。
 
-This software is open-source and free, intended solely for personal learning and communication purposes, and is limited
-to personal game accounts. It is not allowed for any commercial or profit-making purposes. The development team reserves
-the final interpretation rights of this project. Any issues arising from the use of this software are unrelated to the
-project and the development team. If you find merchants using this software for paid boosting services, it is their
-personal behavior, and this software is not authorized for boosting services. Any issues and consequences arising from
-such use are unrelated to this software. This software is not authorized for sale, and any sold versions may contain
-malicious code, leading to the theft of game accounts or computer data, which is unrelated to this software.
+开发者不对使用本软件引起的任何问题负责。使用本软件进行付费代练服务是未经授权且不支持的。由此产生的任何后果均由用户自行承担。本软件未经授权销售，任何出售的版本都可能包含恶意代码。
 
-
+本工具不修改游戏文件或代码，旨在增强用户体验，不提供不公平的优势。
