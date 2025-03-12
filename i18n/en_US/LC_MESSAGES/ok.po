@@ -86,3 +86,21 @@ msgstr ""
 
 msgid "Auto Login Game, Claim Monthly Card"
 msgstr ""
+
+msgid "Combat Sequence"
+msgstr ""
+
+msgid "Farm Relic Task"
+msgstr ""
+
+msgid "How to Combat"
+msgstr ""
+
+msgid "Relic Dungeon To Farm"
+msgstr ""
+
+msgid "Use Original Resin"
+msgstr ""
+
+msgid "Which Relic dungeon to Farm, in the F1 Book (1-17)"
+msgstr ""

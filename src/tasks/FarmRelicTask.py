@@ -24,10 +24,6 @@ class FarmRelicTask(BaseCombatTask):
             'Combat Sequence': '1EQ2EQ3EQ4EQ',
             'Use Original Resin': False
         })
-        self.config_description = {
-            'Relic Dungeon To Farm': 'Which Relic dungeon to Farm, in the F1 Book (1-17)',
-            'Combat Sequence': 'How to Combat'
-        }
 
     def run(self):
         self.teleport_into_dungeon()

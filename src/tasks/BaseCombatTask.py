@@ -19,6 +19,7 @@ class BaseCombatTask(BaseGiTask):
             'Combat Sequence': '1EQ2EQ3EQ4EQ',
         })
         self.config_description = {
+            'Relic Dungeon To Farm': 'Which Relic dungeon to Farm, in the F1 Book (1-17)',
             'Combat Sequence': 'How to Combat, number = Switch, E = Elemental Skill(L = Long Press), Q = Elemental Burst, A = Normal Attack, best to use a shielder first'
         }
 
