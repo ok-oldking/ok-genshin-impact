@@ -19,7 +19,7 @@ class BaseCombatTask(BaseGiTask):
             'Combat Sequence': '1EQ2EQ3EQ4EQ',
         })
         self.config_description = {
-            'Relic Dungeon To Farm': 'Which Relic dungeon to Farm, in the F1 Book (1-17)',
+            'Relic Domain To Farm': 'Which Relic Domain to Farm, in the F1 Book (1-17)',
             'Combat Sequence': 'How to Combat, number = Switch, E = Elemental Skill(L = Long Press), Q = Elemental Burst, A = Normal Attack, best to use a shielder first'
         }
 
@@ -60,7 +60,7 @@ class BaseCombatTask(BaseGiTask):
                     if white_percent > 0.05:
                         self.send_key('q')
                         self.sleep(1)
-                        self.wait_until(self.in_world_or_dungeon, time_out=5)
+                        self.wait_until(self.in_world_or_domain, time_out=5)
             elif action.upper() == 'A':
                 self.click_relative(0.5, 0.5)
                 self.combat_sleep()
@@ -105,7 +105,7 @@ class BaseCombatTask(BaseGiTask):
         self.log_debug(f'current char: {lowest_char} {lowest_conf}')
         return lowest_char
 
-    def dungeon_combat_end(self):
+    def domain_combat_end(self):
         return self.ocr(box='box_dungeon_end_countdown', match=count_down_re)
 
 

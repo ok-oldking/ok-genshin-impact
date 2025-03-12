@@ -19,26 +19,26 @@ class FarmRelicTask(BaseCombatTask):
         })
 
     def run(self):
-        self.teleport_into_dungeon()
+        self.teleport_into_domain()
         self.farm_relic_til_no_stamina()
         self.log_info(f'Farm Relic Completed!', notify=True)
 
-    def teleport_into_dungeon(self):
-        to_farm = self.config['Relic Dungeon To Farm']
+    def teleport_into_domain(self):
+        to_farm = self.config['Relic Domain To Farm']
         self.scroll_into_relic(to_farm)
 
     def farm_relic_til_no_stamina(self):
         while True:
-            self.info_incr('Farm Relic Dungeon Count')
-            self.wait_until(self.in_dungeon, time_out=40, raise_if_not_found=True)
+            self.info_incr('Farm Relic Domain Count')
+            self.wait_until(self.in_domain, time_out=40, raise_if_not_found=True)
             if not self.walk_to_f(time_out=5):
-                raise RuntimeError('Can not find the dungeon key!')
-            self.auto_combat(end_check=self.dungeon_combat_end)
+                raise RuntimeError('Can not find the Domain key!')
+            self.auto_combat(end_check=self.domain_combat_end)
             self.turn_and_walk_to_tree()
-            if not self.claim_dungeon():
+            if not self.claim_domain():
                 break
 
-    def claim_dungeon(self):
+    def claim_domain(self):
         if self.find_one('dungeon_use_double'):
             double_resin = self.ocr(box='box_double_stamina', match=number_re)
             if double_resin:
@@ -78,7 +78,7 @@ class FarmRelicTask(BaseCombatTask):
         self.info_set('Resin', resin)
         self.info_incr('Double Resin', double_resin)
         can_continue = double_resin > 0 or (self.config.get('Use Original Resin') and resin >= 20)
-        self.log_info(f'Farm Relic Dungeon can_continue: {can_continue}')
+        self.log_info(f'Farm Relic Domain can_continue: {can_continue}')
         if can_continue:
             self.confirm_dialog(btn='btn_ok')
         else:
@@ -138,8 +138,8 @@ class FarmRelicTask(BaseCombatTask):
         else:
             self.log_info('no trees')
 
-    def in_dungeon(self):
-        if self.in_world_or_dungeon():
+    def in_domain(self):
+        if self.in_world_or_domain():
             return True
         if self.find_one('relic_pop_up'):
             self.back(after_sleep=1)

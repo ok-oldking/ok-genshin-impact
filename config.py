@@ -69,16 +69,34 @@ config = {
         'force_no_night_light': False,
         'require_bg': True
     },
+    'links': {
+        'default': {
+            'github': 'https://github.com/ok-oldking/ok-genshin-impact',
+            'discord': 'https://discord.gg/Q8utYcPQA3',
+            'share': 'Download OK-WW from https://github.com/ok-oldking/ok-genshin-impact/releases/latest',
+            'faq': 'https://github.com/ok-oldking/ok-genshin-impact#FAQ'
+        },
+        'zh_CN': {
+            'github': 'https://github.com/ok-oldking/ok-genshin-impact',
+            'discord': 'https://discord.gg/Q8utYcPQA3',
+            'share': 'OK-WW 夸克网盘下载：https://pan.quark.cn/s/75b55ef72a34 GitHub下载: https://github.com/ok-oldking/ok-genshin-impact/releases/latest',
+            'qq_channel': 'https://pd.qq.com/s/e2wvbypn7',
+            'faq': 'https://g-frfh1513.coding.net/p/ok-wuthering-waves/d/ok-gi/git/tree/master/README_CN.md#FAQ',
+        },
+    },
+    'about': """
+        <p style="color:red;">
+        <strong>本软件是免费的。</strong> 如果你被收费，请立即退款。请访问GitHub下载最新的官方版本。
+        </p>
+        <p style="color:red;">
+            <strong>本软件仅供个人使用，用于学习Python编程、计算机视觉、UI自动化等。</strong> 请勿将其用于任何营利性或商业用途。
+        </p>
+        <p style="color:red;">
+            <strong>使用本软件可能会导致账号被封。</strong> 请在了解风险后再使用。
+        </p>
+    """,
     'start_timeout': 120,  # default 60
-    'wait_until_before_delay': 0,  # default 1 , for wait_until() function
-    'wait_until_check_delay': 0,
     'wait_until_settle_time': 0,
-    # 'template_matching': {
-    #     'coco_feature_json': os.path.join('assets', 'result.json'),
-    #     'default_horizontal_variance': 0.003,
-    #     'default_vertical_variance': 0.003,
-    #     'default_threshold': 0.78,
-    # },
     'window_size': {
         'width': 1200,
         'height': 800,

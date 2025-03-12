@@ -22,7 +22,7 @@ class BaseGiTask(BaseTask):
     def in_world(self):
         return self.find_one('top_left_paimon')
 
-    def in_world_or_dungeon(self):
+    def in_world_or_domain(self):
         return self.in_world() or self.find_one('top_left_dungeon')
 
     def click(self, x: int | Box | List[Box] = -1, y=-1, move_back=False, name=None, interval=-1, move=True,

@@ -52,7 +52,7 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                         self.send_key('f')
             elif play:=self.find_one('top_left_chat_play', horizontal_variance=0.02):
                 self.click(play)
-            elif self.in_world_or_dungeon():
+            elif self.in_world_or_domain():
                 self.log_info(f'Auto Quest Dialog Completed!', notify=not self.hwnd.visible and self.config.get("Send Notification when Dialog Completed"))
                 # self.executor.interaction.deactivate()
                 return

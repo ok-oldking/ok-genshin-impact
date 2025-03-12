@@ -69,11 +69,11 @@ msgstr "刷圣遗物本"
 msgid "How to Combat, number = Switch, E = Elemental Skill(L = Long Press), Q = Elemental Burst, A = Normal Attack, best to use a shielder first"
 msgstr "数字=切人,E=元素技能(L=长按元素技能),Q=元素爆发,A=普攻,最好先使用盾角色技能"
 
-msgid "Relic Dungeon To Farm"
+msgid "Relic Domain To Farm"
 msgstr "选择刷哪个本"
 
 msgid "Use Original Resin"
 msgstr "使用原粹树脂"
 
-msgid "Which Relic dungeon to Farm, in the F1 Book (1-17)"
+msgid "Which Relic Domain to Farm, in the F1 Book (1-17)"
 msgstr "刷哪个圣遗物本, 在F1书中的位置(1-17)"

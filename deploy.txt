@@ -8,4 +8,6 @@ main.py
 icon.png
 requirements.txt
 README.md
+README_CN.md
+readmes
 i18n

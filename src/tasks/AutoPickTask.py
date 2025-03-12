@@ -23,7 +23,7 @@ class AutoPickTask(TriggerTask, BaseGiTask):
     def trigger(self):
         # self.logger.debug("trigger task2")
         wait_start = 0
-        if self.in_world_or_dungeon():
+        if self.in_world_or_domain():
             while button_f := self.find_f():
                 percent = self.calculate_color_percentage(white_color, button_f)
                 if percent < 0.75:

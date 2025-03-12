@@ -12,7 +12,7 @@
 [![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-genshin-impact/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
 [![Static Badge](https://img.shields.io/badge/Discord-blue)](https://discord.gg/Q8utYcPQA3)
 
-### English | [简体中文](README_CN.md)
+### English | [简体中文](README_cn.md)
 
 It's free to use, and will be opensourced in the future.
 
