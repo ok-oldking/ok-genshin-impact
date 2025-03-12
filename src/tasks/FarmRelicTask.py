@@ -1,14 +1,7 @@
-import re
 import time
-from typing import List
-
-import numpy as np
-from torch.ao.nn.quantized.functional import threshold
-
-from ok import BaseTask, find_boxes_within_boundary, find_boxes_by_name, Box, calculate_color_percentage, og
 from ok import Logger
 from src.tasks.BaseCombatTask import BaseCombatTask
-from src.tasks.BaseGiTask import BaseGiTask, number_re
+from src.tasks.BaseGiTask import number_re
 
 logger = Logger.get_logger(__name__)
 

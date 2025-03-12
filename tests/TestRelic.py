@@ -1,11 +1,9 @@
 # Test case
 import unittest
 
-from torch.ao.nn.quantized.functional import threshold
 
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
-from src.tasks.AutoPickTask import AutoPickTask
 from src.tasks.FarmRelicTask import FarmRelicTask
 
 

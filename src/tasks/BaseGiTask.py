@@ -4,9 +4,8 @@ from typing import List
 
 import cv2
 import numpy as np
-from torch.ao.nn.quantized.functional import threshold
 
-from ok import BaseTask, find_boxes_within_boundary, find_boxes_by_name, Box, calculate_color_percentage, og, Feature
+from ok import BaseTask, Box, calculate_color_percentage, og, Feature
 from ok import Logger
 
 logger = Logger.get_logger(__name__)

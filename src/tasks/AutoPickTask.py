@@ -1,9 +1,8 @@
 import time
 
 from qfluentwidgets import FluentIcon
-from torch.ao.nn.quantized.functional import threshold
 
-from ok import FindFeature, Logger, Box
+from ok import Logger
 from ok import TriggerTask
 from src.tasks.BaseGiTask import BaseGiTask, white_color, pick_up_text_green_color, pick_up_text_blue_color
 
