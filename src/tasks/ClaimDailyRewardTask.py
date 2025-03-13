@@ -1,11 +1,3 @@
-import re
-import time
-
-import win32api
-import win32con
-import win32gui
-from torchvision.transforms.v2.functional import horizontal_flip
-
 from ok import Logger, find_boxes_by_name, find_boxes_within_boundary
 from src.tasks.BaseGiTask import BaseGiTask
 
@@ -20,12 +12,17 @@ class ClaimDailyRewardTask(BaseGiTask):
         self.description = "Claim Daily Reward and Expedition"
 
     def run(self):
-        return self.log_info(f'Developing', notify=True)
-        self.ensure_main()
-        self.teleport_to_fontaine_catherine()
-        self.sleep(1)
-        self.go_to_catherine()
+        # self.ensure_main()
+        # self.teleport_to_fontaine_catherine()
+        # self.sleep(1)
+        # self.go_to_catherine()
         return
+
+    def claim_rewards(self):
+        pick_daily_reward = self.find_feature("chat_3_dots", box=self.find_choices_box)
+        if not pick_daily_reward:
+            raise RuntimeError("No daily reward found")
+
 
     def teleport_to_fontaine_catherine(self):
         self.send_key('m')

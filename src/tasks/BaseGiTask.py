@@ -15,6 +15,8 @@ class BaseGiTask(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.find_f_box = self.box_of_screen(0.63, 0.36, 0.65, 0.77)
+        self.find_choices_box = self.box_of_screen(0.66, 0.36, 0.69, 0.77)
 
     def find_f(self):
         return self.find_one("f", vertical_variance=0.14)
