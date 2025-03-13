@@ -1,5 +1,5 @@
 import time
-from ok import Logger
+from ok import Logger, og
 from src.tasks.BaseCombatTask import BaseCombatTask
 from src.tasks.BaseGiTask import number_re
 
@@ -31,6 +31,9 @@ class FarmRelicTask(BaseCombatTask):
         while True:
             self.info_incr('Farm Relic Domain Count')
             self.wait_until(self.in_domain, time_out=40, raise_if_not_found=True)
+            if not og.my_app.mini_map_arrow:
+                mini_map_arrow_box = self.get_box_by_name('domain_map_arrow_east')
+                og.my_app.mini_map_arrow = mini_map_arrow_box.crop_frame(self.frame)
             if not self.walk_to_f(time_out=7):
                 raise RuntimeError('Can not find the Domain key!')
             self.auto_combat(end_check=self.domain_combat_end)
@@ -66,6 +69,7 @@ class FarmRelicTask(BaseCombatTask):
 
         self.wait_feature('btn_ok', box='bottom', time_out=20, raise_if_not_found=True,
                           settle_time=1, threshold=0.9)
+        self.sleep(3)
         lefts = self.ocr(box='box_resin_left', match=number_re)
         if not lefts:
             raise Exception('Can not find resin left!')

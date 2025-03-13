@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 
+from ok import ConfigOption
 from src.GenshinInteractionLocal import GenshinInteraction
 
 version = "v5.0.11"
@@ -38,6 +39,14 @@ def make_bottom_right_black(frame):
     except Exception as e:
         print(f"Error processing frame: {e}")
         return frame
+
+
+auto_combat_config = ConfigOption('Auto Combat Config', {
+    'Combat Sequence': '1EQ2EQ3EQ4EQ',
+}, config_description={
+    'Combat Sequence': 'How to Combat, number = Switch, E = Elemental Skill(L = Long Press), Q = Elemental Burst, A = Normal Attack, best to use a shielder first'
+},
+                                  description='How to Combat')
 
 config = {
     'debug': False,  # Optional, default: False
@@ -138,6 +147,7 @@ config = {
         ["src.tasks.DailyTask", "DailyTask"],
         ["src.tasks.FarmRelicTask", "FarmRelicTask"],
         ["src.tasks.ClaimDailyRewardTask", "ClaimDailyRewardTask"],
+        ["src.tasks.CraftResinTask", "CraftResinTask"],
     ],
     'trigger_tasks': [  # tasks to execute
         ["src.tasks.AutoPickTask", "AutoPickTask"],
@@ -145,4 +155,5 @@ config = {
         ["src.tasks.AutoLoginTask", "AutoLoginTask"],
     ],
     'my_app': ['src.globals', 'Globals'],
+    'global_configs': [auto_combat_config],
 }

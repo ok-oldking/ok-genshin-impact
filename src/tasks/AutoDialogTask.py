@@ -63,7 +63,7 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                 last_in_dialog_time = time.time()
                 if self.config.get('Speed up Dialog Using Space Key', False):
                     self.send_key('space')
-            elif time.time() - last_in_dialog_time > 10:
+            elif time.time() - last_in_dialog_time > 15:
                 self.log_info(f'Auto Quest Dialog Need to Choose Manually!',
                               notify=not self.hwnd.visible)
                 return

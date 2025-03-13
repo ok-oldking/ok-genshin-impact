@@ -4,18 +4,16 @@ from src.tasks.BaseGiTask import BaseGiTask, pick_up_text_yellow_color
 logger = Logger.get_logger(__name__)
 
 
-class ClaimDailyRewardTask(BaseGiTask):
+class CraftResinTask(BaseGiTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "Claim Daily Reward"
-        self.description = "Teleport to Fontaine and Claim Daily Reward and Expedition"
+        self.name = "Craft Resin"
+        self.description = "Teleport to Fontaine and Craft Condensed Resin"
 
     def run(self):
+        return self.turn_east()
         self.ensure_main()
-        self.claim_daily_book()
         self.teleport_to_fontaine_catherine()
-        self.go_to_catherine()
-        self.claim_rewards()
+        self.go_and_craft()
         return
-

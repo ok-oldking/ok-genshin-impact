@@ -16,12 +16,9 @@ class BaseCombatTask(BaseGiTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.default_config.update({
-            'Combat Sequence': '1EQ2EQ3EQ4EQ',
+            'Combat Sequence': None,
         })
-        self.config_description = {
-            'Relic Domain To Farm': 'Which Relic Domain to Farm, in the F1 Book (1-17)',
-            'Combat Sequence': 'How to Combat, number = Switch, E = Elemental Skill(L = Long Press), Q = Elemental Burst, A = Normal Attack, best to use a shielder first'
-        }
+        self.config_type['Combat Sequence'] = {'type': "global"}
 
     def auto_combat(self, time_out=120, end_check=None):
         action_index = 0
@@ -31,7 +28,7 @@ class BaseCombatTask(BaseGiTask):
             elapsed = time.time() - start
             if elapsed > time_out:
                 raise RuntimeError('Auto Combat timed out after {} seconds!'.format(time_out))
-            if elapsed > 3 and end_check is not None and end_check():
+            if elapsed > 3 and end_check is not None and self.in_world_or_domain() and end_check():
                 if self.debug:
                     self.screenshot('combat_end')
                 self.info_incr('Combat Count')
@@ -59,7 +56,7 @@ class BaseCombatTask(BaseGiTask):
                     self.log_debug('q_white_color: {}'.format(white_percent))
                     if white_percent > 0.05:
                         self.send_key('q')
-                        self.sleep(1)
+                        self.sleep(1.5)
                         self.wait_until(self.in_world_or_domain, time_out=5)
             elif action.upper() == 'A':
                 self.click_relative(0.5, 0.5)

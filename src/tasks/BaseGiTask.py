@@ -4,12 +4,12 @@ from typing import List
 
 import cv2
 import numpy as np
+from ultralytics import settings
 
-from ok import BaseTask, Box, calculate_color_percentage, og, Feature
+from ok import BaseTask, Box, calculate_color_percentage, og, Feature, ConfigOption
 from ok import Logger
 
 logger = Logger.get_logger(__name__)
-
 
 class BaseGiTask(BaseTask):
 
@@ -32,6 +32,9 @@ class BaseGiTask(BaseTask):
 
     def in_world_or_domain(self):
         return self.in_world() or self.find_one('top_left_dungeon')
+
+    def in_domain(self):
+        return self.find_one('top_left_dungeon')
 
     def click(self, x: int | Box | List[Box] = -1, y=-1, move_back=False, name=None, interval=-1, move=True,
               down_time=0.01, after_sleep=0):
@@ -105,7 +108,97 @@ class BaseGiTask(BaseTask):
                 break
         return result
 
-    def find_tree(self, threshold=0.5) -> List[Box]:
+    def chat_catherine(self):
+        self.wait_until(self.find_f, raise_if_not_found=True)
+        self.send_key('f', after_sleep=2)
+        self.send_key('space', after_sleep=2)
+
+    def claim_rewards(self):
+        pick_daily_reward = self.find_pick_up_with_yellow_text('pick_daily_reward')
+        if pick_daily_reward:
+            self.click(pick_daily_reward, after_sleep=3)
+            self.back(after_sleep=3)
+            f = self.wait_until(self.find_f, raise_if_not_found=True)
+            self.click(f, after_sleep=2)
+            self.send_key('space', after_sleep=2)
+
+        pick_daily_expedition = self.find_pick_up_with_yellow_text('pick_daily_expedition')
+
+        if pick_daily_expedition:
+            self.click(pick_daily_expedition)
+            self.wait_click_feature('claim_all', settle_time=0.5)
+            self.wait_click_feature('dispatch_again', settle_time=0.5, after_sleep=1.5)
+            self.back(after_sleep=3)
+
+    def find_pick_up_with_yellow_text(self, feature):
+        pick_daily_reward = self.find_one(feature, box=self.find_choices_box)
+        if not pick_daily_reward:
+            raise RuntimeError("No daily reward found")
+        text_zone = pick_daily_reward.copy(x_offset=pick_daily_reward.width * 3,
+                                           width_offset=pick_daily_reward.width * 1.2)
+        yellow_percent = self.calculate_color_percentage(pick_up_text_yellow_color, text_zone)
+        self.log_debug(f"{feature} yellow_percent={yellow_percent}"'')
+        if yellow_percent > 0.05:
+            return pick_daily_reward
+
+    def teleport_to_fontaine_catherine(self):
+        self.send_key('m')
+        self.wait_feature('map_close', raise_if_not_found=True, settle_time=1)
+        self.scroll_relative(0.5, 0.5, 100)
+        self.sleep(0.5)
+        self.click_relative(0.96, 0.95, after_sleep=1)
+        self.click_relative(0.75, 0.35, after_sleep=1)
+        map_pin_catherine = self.find_one('map_pin_catherine', box=self.box_of_screen(0.1, 0.1, 0.9, 0.9))
+        if not map_pin_catherine:
+            self.log_info("No map_pin_catherine found")
+            self.click_relative(0.5, 0.5, after_sleep=1)
+        else:
+            self.click(map_pin_catherine, after_sleep=1)
+        self.wait_click_feature('map_option_catherine', raise_if_not_found=True,
+                                horizontal_variance=0.1,
+                                vertical_variance=0.2, after_sleep=1, settle_time=0.5)
+        self.wait_confirm_dialog(btn='btn_teleport')
+        self.wait_world()
+        self.sleep(1)
+
+    def go_to_catherine(self):
+        self.executor.interaction.operate(self.do_go_to_catherine, block=True)
+        self.wait_feature('pick_daily_reward', settle_time=0.5,
+                          post_action=lambda: self.send_key('space', after_sleep=1))
+
+    def go_and_craft(self):
+        self.executor.interaction.operate(self.do_go_to_craft, block=True)
+        ok = self.wait_feature('btn_ok', box='bottom_right', settle_time=0.5,
+                               post_action=lambda: self.send_key('space', after_sleep=1))
+        self.click(ok, after_sleep=1)
+        self.back(after_sleep=1)
+        self.back(after_sleep=1)
+
+    def claim_daily_book(self):
+        self.open_book()
+        if box := self.find_red_dot(box='box_commission'):
+            self.click(box, after_sleep=1)
+            if gift := self.find_one('daily_claim_gift', horizontal_variance=0.05, vertical_variance=0.05):
+                self.click(gift, after_sleep=1)
+        self.ensure_main()
+
+    def find_red_dot(self, box):
+        if self.find_one('red_dot', box=box):
+            return self.get_box_by_name(box)
+
+    def do_go_to_craft(self):
+        self.sleep(0.2)
+        self.executor.interaction.do_move_mouse_relative(120, 0)
+        self.sleep(0.2)
+        self.do_walk_to_f(min_time=1.5, time_out=6)
+
+    def do_go_to_catherine(self):
+        self.sleep(0.2)
+        self.executor.interaction.do_move_mouse_relative(-700, 0)
+        self.sleep(0.2)
+        self.do_walk_to_f(min_time=1.5, time_out=2)
+
+    def find_tree(self, threshold=0.5) -> Box:
         """
         Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
 
@@ -176,7 +269,9 @@ class BaseGiTask(BaseTask):
             my_box.confidence = scores[index]
             detections.append(my_box)
 
-        return sorted(detections, key=lambda detection: detection.confidence, reverse=True)
+        ret = sorted(detections, key=lambda detection: detection.confidence, reverse=True)
+        if ret:
+            return ret[0]
 
     def open_book(self):
         self.send_key('f1', after_sleep=2)
@@ -232,7 +327,7 @@ class BaseGiTask(BaseTask):
         start = time.time()
         while not self.in_world() and time.time() - start < 10:
             self.send_key('esc')
-            self.sleep(1.5)
+            self.sleep(2)
         if not self.in_world():
             raise Exception('Enter Main Page Failed!')
 
@@ -250,6 +345,57 @@ class BaseGiTask(BaseTask):
                                    threshold=0.9)
         self.click(btn_ok, after_sleep=1)
 
+    def turn_east(self):
+        angle = self.get_angle()
+        self.info_set('East Angle:', angle)
+        if angle is not None:
+            self.executor.interaction.operate(lambda: self.turn_angle(angle * -1), block=True)
+
+    def turn_angle(self, angle):
+        self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5), down_time=0.02)
+        self.sleep(0.5)
+        turn_per_angle = 20.8
+        self.sleep(0.1)
+        self.executor.interaction.do_move_mouse_relative(round(turn_per_angle * angle), 0)
+        self.sleep(0.1)
+        self.do_send_key_down('w')
+        self.sleep(0.1)
+        self.do_send_key_up('w')
+        self.sleep(0.6)
+        self.info_set(f'turn_angle_after', self.get_angle())
+
+    def get_angle(self):
+        arrow_template = self.get_feature_by_name('domain_map_arrow_east')
+        original_mat = arrow_template.mat
+        max_conf = 0
+        max_angle = None
+        (h, w) = arrow_template.mat.shape[:2]
+        self.log_debug(f'turn_east h:{h} w:{w}')
+        center = (w // 2, h // 2)
+        target_box = self.get_box_by_name('domain_map_arrow_east')
+        target_box = target_box.copy(x_offset=-target_box.width * 0.2, y_offset=-target_box.height * 0.2,
+                                     width_offset=target_box.width * 0.4, height_offset=target_box.height * 0.4)
+        for angle in range(0, 360):
+            # Rotate the template image
+            rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+            arrow_template.mat = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
+            arrow_template.mask = np.where(np.all(arrow_template.mat == [0, 0, 0], axis=2), 0, 255).astype(np.uint8)
+
+            target = self.find_one('target_box', box=target_box,
+                                   template=arrow_template, threshold=0.5)
+            if target and target.confidence > max_conf:
+                max_conf = target.confidence
+                max_angle = angle
+        arrow_template.mat = original_mat
+        arrow_template.mask = None
+        self.log_debug(f'turn_east max_conf: {max_conf} {max_angle}')
+        if max_angle is not None:
+            if max_angle > 180:
+                return 360 - max_angle
+            else:
+                return max_angle * -1
+
+
     def do_turn_to(self, fun):
         self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5), down_time=0.02)
         self.sleep(0.5)
@@ -263,7 +409,8 @@ class BaseGiTask(BaseTask):
             d_start = time.time()
             target = fun()
             if isinstance(target, list):
-                target = target[0]
+                if len(target) > 0:
+                    target = target[0]
             self.draw_boxes(boxes=target)
             if target:
                 distance = target.center()[0] - self.width / 2
@@ -314,6 +461,12 @@ pick_up_text_green_color = {
     'b': (59, 75)  # Blue range
 }
 
+pick_up_text_yellow_color = {
+    'r': (245, 255),  # Red range
+    'g': (194, 214),  # Green range
+    'b': (40, 60)  # Blue range
+}
+
 pick_up_text_blue_color = {
     'r': (59, 79),  # Red range
     'g': (245, 255),  # Green range
@@ -339,3 +492,10 @@ dark_gray_color = {
 }
 
 
+def create_mask(rotated_image):
+    mask = np.ones(rotated_image.shape, dtype=np.uint8) * 255
+    for i in range(rotated_image.shape[0]):
+        for j in range(rotated_image.shape[1]):
+            if rotated_image[i, j] == 0:  # Assuming black is the background color
+                mask[i, j] = 0
+    return mask

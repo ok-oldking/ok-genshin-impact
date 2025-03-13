@@ -13,6 +13,7 @@ class Globals(QObject):
     def __init__(self, exit_event):
         super().__init__()
         self._tree_model = None
+        self.mini_map_arrow = None
 
     @property
     def tree_model(self):
