@@ -32,9 +32,9 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
         start_time = time.time()
         last_in_dialog_time = start_time
         while entered:
-            f = self.find_one("f", box=self.box_of_screen(0.63, 0.45, 0.65, 0.77))
+            f = self.find_one("f", box=self.box_of_screen(0.63, 0.36, 0.65, 0.77))
             if f:
-                dots = self.find_feature("chat_3_dots", box=self.box_of_screen(0.66,0.45,0.69,0.77))
+                dots = self.find_feature("chat_3_dots", box=self.box_of_screen(0.66, 0.36, 0.69, 0.77))
                 if dots:
                     found_near = False
                     for dot in dots:

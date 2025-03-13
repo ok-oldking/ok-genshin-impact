@@ -137,6 +137,7 @@ config = {
     'onetime_tasks': [  # tasks to execute
         ["src.tasks.DailyTask", "DailyTask"],
         ["src.tasks.FarmRelicTask", "FarmRelicTask"],
+        ["src.tasks.ClaimDailyRewardTask", "ClaimDailyRewardTask"],
     ],
     'trigger_tasks': [  # tasks to execute
         ["src.tasks.AutoPickTask", "AutoPickTask"],

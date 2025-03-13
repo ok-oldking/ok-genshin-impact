@@ -27,15 +27,18 @@ class BaseGiTask(BaseTask):
 
     def click(self, x: int | Box | List[Box] = -1, y=-1, move_back=False, name=None, interval=-1, move=True,
               down_time=0.01, after_sleep=0):
-        super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.02, after_sleep=after_sleep)
+        super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.03, after_sleep=after_sleep)
 
-    def do_walk_to_f(self, time_out=5, run=True):
+    def do_walk_to_f(self, time_out=5, run=True, min_time=0):
+        start = time.time()
         self.do_send_key_down('w')
         if run:
             self.sleep(0.1)
             self.executor.interaction.do_mouse_down(btn='right')
+        if min_time:
+            self.sleep(min_time)
         if self.wait_until(self.find_f, time_out=time_out):
-            self.log_info('found f while walking')
+            self.log_info(f'found f while walking cost:{time.time() - start}')
             self.executor.interaction.do_send_key('f')
             if run:
                 self.executor.interaction.do_mouse_up(btn='right')
@@ -56,11 +59,12 @@ class BaseGiTask(BaseTask):
     def do_send_key_up(self, key):
         self.executor.interaction.do_send_key_up(key)
 
-    def walk_to_f(self, time_out=10, run=True):
-        if self.find_f():
+    def walk_to_f(self, time_out=5, run=True, min_time=0):
+        if self.find_f() and min_time == 0:
             self.send_key('f')
             return True
-        return self.executor.interaction.operate(lambda: self.do_walk_to_f(time_out=time_out, run=run), block=True)
+        return self.executor.interaction.operate(
+            lambda: self.do_walk_to_f(time_out=time_out, run=run, min_time=min_time), block=True)
 
     def find_choices(self, box, horizontal=0, vertical=0, limit=1, threshold=0.2) -> List[Box]:
         result = []
@@ -237,6 +241,55 @@ class BaseGiTask(BaseTask):
         btn_ok = self.wait_feature(btn, box='bottom', raise_if_not_found=True, time_out=time_out, settle_time=1,
                                    threshold=0.9)
         self.click(btn_ok, after_sleep=1)
+
+    def do_turn_to(self, fun):
+        self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5), down_time=0.02)
+        self.sleep(0.5)
+        start = time.time()
+        found_tree = False
+        change_count = 0
+        step = 100
+        direction = 1
+        abs_distance = self.width
+        while time.time() - start < 20:
+            d_start = time.time()
+            target = fun()
+            if isinstance(target, list):
+                target = target[0]
+            self.draw_boxes(boxes=target)
+            if target:
+                distance = target.center()[0] - self.width / 2
+                abs_distance = abs(distance)
+            else:
+                distance = 1
+            if target:
+                self.log_debug(
+                    f'trees: {target} cost:{time.time() - d_start} {target.center()[0]} {self.width} distance:{distance}')
+
+            new_direction = -1 if distance < 0 else 1
+
+            if target and direction != new_direction:
+                direction = new_direction
+                step = max(1, int(step / 2))
+                change_count += 1
+                self.log_debug(f'turning {direction} to {new_direction}')
+            if change_count >= 4:
+                self.log_info('turned a lot of trees, break')
+                break
+            if not target and abs_distance <= self.width_of_screen(0.005):
+                logger.info('found and lost tree break')
+                break
+            self.executor.interaction.do_move_mouse_relative(direction * step, 0)
+            self.next_frame()
+        target = fun()
+        if isinstance(target, list):
+            target = target[0]
+        if self.debug:
+            self.draw_boxes(boxes=target)
+        if target:
+            self.log_info(f'trees: {target} {self.width / 2 - target.center()[0]}')
+        else:
+            self.log_info('no trees')
 
 
 number_re = re.compile(r'^\d+$')

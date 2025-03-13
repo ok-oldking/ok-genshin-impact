@@ -31,7 +31,7 @@ class FarmRelicTask(BaseCombatTask):
         while True:
             self.info_incr('Farm Relic Domain Count')
             self.wait_until(self.in_domain, time_out=40, raise_if_not_found=True)
-            if not self.walk_to_f(time_out=5):
+            if not self.walk_to_f(time_out=7):
                 raise RuntimeError('Can not find the Domain key!')
             self.auto_combat(end_check=self.domain_combat_end)
             self.turn_and_walk_to_tree()
@@ -89,54 +89,9 @@ class FarmRelicTask(BaseCombatTask):
         self.executor.interaction.operate(self.do_turn_and_walk_to_tree, block=True)
 
     def do_turn_and_walk_to_tree(self):
-        self.do_turn_to_tree()
+        self.do_turn_to(self.find_tree)
         if not self.do_walk_to_f(time_out=10):
             raise RuntimeError('Can not walk to the tree')
-
-    def do_turn_to_tree(self):
-        self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5), down_time=0.02)
-        self.sleep(0.5)
-        start = time.time()
-        found_tree = False
-        change_count = 0
-        step = 100
-        direction = 1
-        abs_distance = self.width
-        while time.time() - start < 20:
-            d_start = time.time()
-            trees = self.find_tree()
-            self.draw_boxes(boxes=trees)
-            if trees:
-                distance = trees[0].center()[0] - self.width / 2
-                abs_distance = abs(distance)
-            else:
-                distance = 1
-            if trees:
-                self.log_debug(
-                    f'trees: {trees[0]} cost:{time.time() - d_start} {trees[0].center()[0]} {self.width} distance:{distance}')
-
-            new_direction = -1 if distance < 0 else 1
-
-            if trees and direction != new_direction:
-                direction = new_direction
-                step = max(1, int(step / 2))
-                change_count += 1
-                self.log_debug(f'turning {direction} to {new_direction}')
-            if change_count >= 4:
-                self.log_info('turned a lot of trees, break')
-                break
-            if not trees and abs_distance <= self.width_of_screen(0.005):
-                logger.info('found and lost tree break')
-                break
-            self.executor.interaction.do_move_mouse_relative(direction * step, 0)
-            self.next_frame()
-        trees = self.find_tree()
-        if self.debug:
-            self.draw_boxes(boxes=trees)
-        if trees:
-            self.log_info(f'trees: {trees[0]} {self.width / 2 - trees[0].center()[0]}')
-        else:
-            self.log_info('no trees')
 
     def in_domain(self):
         if self.in_world_or_domain():

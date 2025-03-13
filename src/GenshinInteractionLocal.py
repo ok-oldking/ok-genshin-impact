@@ -19,8 +19,6 @@ class GenshinInteraction(BaseInteraction):
 
     def __init__(self, capture: BaseCaptureMethod, hwnd_window):
         super().__init__(capture)
-        from pynput.mouse import Controller
-        self.mouse = Controller()
         self.post_interaction = PostMessageInteraction(capture, hwnd_window)
         self.pydirectinput_interaction = PyDirectInteraction(capture, hwnd_window)
         self.pydirectinput_interaction.check_clickable = False
@@ -287,6 +285,9 @@ class GenshinInteraction(BaseInteraction):
         logger.debug(f"on_visible {visible}")
         if visible:
             self.post_interaction.activate()
+
+    def move_mouse_relative(self, dx, dy):
+        self.operate(lambda: self.do_move_mouse_relative(dx, dy), block=True)
 
     def do_move_mouse_relative(self, dx, dy):
         """
