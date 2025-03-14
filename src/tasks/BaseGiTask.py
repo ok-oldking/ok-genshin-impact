@@ -349,9 +349,18 @@ class BaseGiTask(BaseTask):
         angle = self.get_angle()
         self.info_set('East Angle:', angle)
         if angle is not None:
-            self.executor.interaction.operate(lambda: self.turn_angle(angle * -1), block=True)
+            self.executor.interaction.operate(lambda: self.do_turn_angle(), block=True)
 
-    def turn_angle(self, angle):
+    def turn_east_and_move_to(self, fun):
+        self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(fun), block=True)
+
+    def do_turn_east_and_move_to(self, fun):
+        self.do_turn_angle()
+        # self.do_move_to(fun)
+
+    def do_turn_angle(self):
+        angle = self.get_angle()
+        self.info_set('East Angle:', angle)
         self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5), down_time=0.02)
         self.sleep(0.5)
         turn_per_angle = 20.8
@@ -359,7 +368,7 @@ class BaseGiTask(BaseTask):
         self.executor.interaction.do_move_mouse_relative(round(turn_per_angle * angle), 0)
         self.sleep(0.1)
         self.do_send_key_down('w')
-        self.sleep(0.1)
+        self.sleep(0.2)
         self.do_send_key_up('w')
         self.sleep(0.6)
         self.info_set(f'turn_angle_after', self.get_angle())
@@ -375,14 +384,18 @@ class BaseGiTask(BaseTask):
         target_box = self.get_box_by_name('domain_map_arrow_east')
         target_box = target_box.copy(x_offset=-target_box.width * 0.2, y_offset=-target_box.height * 0.2,
                                      width_offset=target_box.width * 0.4, height_offset=target_box.height * 0.4)
+        if self.debug:
+            self.screenshot('arrow_original', original_mat)
         for angle in range(0, 360):
             # Rotate the template image
             rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
             arrow_template.mat = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
             arrow_template.mask = np.where(np.all(arrow_template.mat == [0, 0, 0], axis=2), 0, 255).astype(np.uint8)
 
-            target = self.find_one('target_box', box=target_box,
+            target = self.find_one(f'arrow_{angle}', box=target_box,
                                    template=arrow_template, threshold=0.5)
+            if self.debug and angle % 90 == 0:
+                self.screenshot(f'arrow_rotated_{angle}', arrow_template.mat)
             if target and target.confidence > max_conf:
                 max_conf = target.confidence
                 max_angle = angle
@@ -394,6 +407,34 @@ class BaseGiTask(BaseTask):
                 return 360 - max_angle
             else:
                 return max_angle * -1
+
+    def do_move_to(self, fun):
+        start = time.time()
+        target = fun()
+        if not target:
+            raise Exception('Move Failed can not find target!')
+        distance = target.center()[0] - self.width / 2
+        if abs(distance) <= self.width_of_screen(0.02):
+            self.log_info(f'do_move_to Do not need to move! {distance}')
+            return
+        if distance > 0:
+            direction = 'd'
+        else:
+            direction = 'a'
+        self.do_send_key_down(direction)
+        self.log_info(f'do_move_to start moving! {distance} {direction}')
+        while time.time() - start < 10:
+            target = fun()
+            if self.debug:
+                self.draw_boxes(boxes=target)
+            if target:
+                distance = target.center()[0] - self.width / 2
+            if abs(distance) <= self.width_of_screen(0.02):
+                self.log_info(f'do_move_to move success {distance}')
+                self.do_send_key_up(direction)
+                return
+            self.next_frame()
+
 
 
     def do_turn_to(self, fun):

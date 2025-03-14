@@ -12,7 +12,8 @@ class CraftResinTask(BaseGiTask):
         self.description = "Teleport to Fontaine and Craft Condensed Resin"
 
     def run(self):
-        return self.turn_east()
+        self.turn_east_and_move_to(self.find_tree)
+        return
         self.ensure_main()
         self.teleport_to_fontaine_catherine()
         self.go_and_craft()
