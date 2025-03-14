@@ -4,7 +4,6 @@ from typing import List
 
 import cv2
 import numpy as np
-from ultralytics import settings
 
 from ok import BaseTask, Box, calculate_color_percentage, og, Feature, ConfigOption
 from ok import Logger
@@ -40,26 +39,52 @@ class BaseGiTask(BaseTask):
               down_time=0.01, after_sleep=0):
         super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.03, after_sleep=after_sleep)
 
-    def do_walk_to_f(self, time_out=5, run=True, min_time=0):
-        start = time.time()
+    def do_walk_to_f(self, time_out=5, run=True, min_time=0, direction_fun=None):
         self.do_send_key_down('w')
         if run:
             self.sleep(0.1)
             self.executor.interaction.do_mouse_down(btn='right')
         if min_time:
             self.sleep(min_time)
-        if self.wait_until(self.find_f, time_out=time_out):
-            self.log_info(f'found f while walking cost:{time.time() - start}')
-            self.executor.interaction.do_send_key('f')
-            if run:
-                self.executor.interaction.do_mouse_up(btn='right')
-            self.do_send_key_up('w')
-            found = True
-        else:
-            if run:
-                self.executor.interaction.do_mouse_up(btn='right')
-            self.do_send_key_up('w')
-            found = False
+        start = time.time()
+        found = False
+        current_direction = None
+        while time.time() - start < time_out:
+            if self.find_f():
+                self.log_info(f'found f while walking cost:{time.time() - start}')
+                self.executor.interaction.do_send_key('f')
+                if run:
+                    self.executor.interaction.do_mouse_up(btn='right')
+                self.do_send_key_up('w')
+                found = True
+                break
+            if direction_fun:
+                target = direction_fun()
+                if target:
+                    distance = target.center()[0] - self.width / 2
+                else:
+                    distance = 0
+                if abs(distance) < self.width_of_screen(0.02):
+                    new_direction = None
+                elif distance > 0:
+                    new_direction = 'd'
+                else:
+                    new_direction = 'a'
+                if new_direction != current_direction:
+                    self.log_info(f'changed direction {new_direction}')
+                    if current_direction:
+                        self.do_send_key_up(current_direction)
+                        self.sleep(0.1)
+                    if new_direction:
+                        self.do_send_key_down(new_direction)
+                    current_direction = new_direction
+            self.next_frame()
+        if current_direction:
+            self.do_send_key_up(current_direction)
+        if run:
+            self.executor.interaction.do_mouse_up(btn='right')
+        self.do_send_key_up('w')
+
         if found:
             self.sleep(1)
         return found
@@ -349,18 +374,18 @@ class BaseGiTask(BaseTask):
         angle = self.get_angle()
         self.info_set('East Angle:', angle)
         if angle is not None:
-            self.executor.interaction.operate(lambda: self.do_turn_angle(), block=True)
+            self.executor.interaction.operate(lambda: self.do_turn_angle(angle * -1), block=True)
 
     def turn_east_and_move_to(self, fun):
-        self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(fun), block=True)
-
-    def do_turn_east_and_move_to(self, fun):
-        self.do_turn_angle()
-        # self.do_move_to(fun)
-
-    def do_turn_angle(self):
         angle = self.get_angle()
         self.info_set('East Angle:', angle)
+        self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(angle * -1, fun), block=True)
+
+    def do_turn_east_and_move_to(self, angle, fun):
+        self.do_turn_angle(angle)
+        self.do_walk_to_f(direction_fun=fun)
+
+    def do_turn_angle(self, angle):
         self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5), down_time=0.02)
         self.sleep(0.5)
         turn_per_angle = 20.8
@@ -414,7 +439,7 @@ class BaseGiTask(BaseTask):
         if not target:
             raise Exception('Move Failed can not find target!')
         distance = target.center()[0] - self.width / 2
-        if abs(distance) <= self.width_of_screen(0.02):
+        if abs(distance) <= self.width_of_screen(0.05):
             self.log_info(f'do_move_to Do not need to move! {distance}')
             return
         if distance > 0:
@@ -429,7 +454,7 @@ class BaseGiTask(BaseTask):
                 self.draw_boxes(boxes=target)
             if target:
                 distance = target.center()[0] - self.width / 2
-            if abs(distance) <= self.width_of_screen(0.02):
+            if abs(distance) <= self.width_of_screen(0.1):
                 self.log_info(f'do_move_to move success {distance}')
                 self.do_send_key_up(direction)
                 return
