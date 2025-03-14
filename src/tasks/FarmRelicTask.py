@@ -1,5 +1,4 @@
-import time
-from ok import Logger, og
+from ok import Logger
 from src.tasks.BaseCombatTask import BaseCombatTask
 from src.tasks.BaseGiTask import number_re
 
@@ -19,29 +18,32 @@ class FarmRelicTask(BaseCombatTask):
         })
 
     def run(self):
-        self.teleport_into_domain()
-        self.farm_relic_til_no_stamina()
+        if self.teleport_into_domain():
+            self.farm_relic_til_no_stamina()
         self.log_info(f'Farm Relic Completed!', notify=True)
 
     def teleport_into_domain(self):
         self.info_set('current task', 'teleport_into_domain')
         to_farm = self.config['Relic Domain To Farm']
-        self.scroll_into_relic(to_farm)
+        success = self.scroll_into_relic(to_farm, self.config.get('Use Original Resin'))
+        if not success:
+            self.log_info(f'No Resin to Farm Relic!', notify=True)
+            self.ensure_main()
+        return success
 
     def farm_relic_til_no_stamina(self):
         self.info_set('current task', 'farm_relic_til_no_stamina')
         while True:
             self.info_incr('Farm Relic Domain Count')
-            self.wait_until(self.in_domain, time_out=40, raise_if_not_found=True)
-            if not og.my_app.mini_map_arrow:
-                mini_map_arrow_box = self.get_box_by_name('domain_map_arrow_east')
-                og.my_app.mini_map_arrow = mini_map_arrow_box.crop_frame(self.frame)
+            self.wait_until(self.wait_in_domain, settle_time=1, time_out=40, raise_if_not_found=True)
             if not self.walk_to_f(time_out=7):
                 raise RuntimeError('Can not find the Domain key!')
             self.auto_combat(end_check=self.domain_combat_end)
-            self.turn_east_and_move_to(self.find_tree)
+            if not self.turn_east_and_move_to(self.find_tree):
+                raise RuntimeError('Can get to the Domain Tree!')
             if not self.claim_domain():
                 break
+        self.wait_world()
 
     def claim_domain(self):
         if self.find_one('dungeon_use_double'):
@@ -99,8 +101,8 @@ class FarmRelicTask(BaseCombatTask):
         if not self.do_walk_to_f(time_out=10):
             raise RuntimeError('Can not walk to the tree')
 
-    def in_domain(self):
-        if self.in_world_or_domain():
+    def wait_in_domain(self):
+        if self.in_domain():
             return True
         if self.find_one('relic_pop_up'):
             self.back(after_sleep=1)

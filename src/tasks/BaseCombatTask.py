@@ -19,11 +19,12 @@ class BaseCombatTask(BaseGiTask):
             'Combat Sequence': None,
         })
         self.config_type['Combat Sequence'] = {'type': "global"}
+        self.combat_config = self.get_global_config('Auto Combat Config')
 
     def auto_combat(self, time_out=120, end_check=None):
         action_index = 0
         start = time.time()
-        combat_str = self.config.get('Combat Sequence').strip()
+        combat_str = self.combat_config.get('Combat Sequence').strip()
         while True:
             elapsed = time.time() - start
             if elapsed > time_out:

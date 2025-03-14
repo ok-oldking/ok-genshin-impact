@@ -1,3 +1,4 @@
+import math
 import re
 import time
 from typing import List
@@ -55,7 +56,7 @@ class BaseGiTask(BaseTask):
         if self.in_world():
             og.my_app.logged_in = True
             return True
-        return self.in_world()
+        return self.in_domain()
 
     def in_domain(self):
         return self.find_one('top_left_dungeon')
@@ -64,18 +65,54 @@ class BaseGiTask(BaseTask):
               down_time=0.01, after_sleep=0):
         super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.03, after_sleep=after_sleep)
 
-    def do_walk_to_f(self, time_out=5, run=True, min_time=0, direction_fun=None):
+    def calculate_angle_between(self, box1: Box, box2: Box):
+        center1_x, center1_y = box1.center()
+        center2_x, center2_y = box2.center()
+        delta_x = center2_x - center1_x
+        delta_y = center2_y - center1_y
+
+        angle_radians = math.atan2(delta_y, delta_x)  # Returns angle in radians, range [-pi, pi]
+        angle_degrees = math.degrees(angle_radians)  # Convert radians to degrees
+
+        return angle_degrees
+
+    def mini_map_find(self, feature, threshold=0.6):
+        return self.find_one(feature, box='box_mini_map', threshold=threshold)
+
+    def do_turn_to_mini_map(self, feature):
+        self.do_turn_angle(self.get_mini_map_turn_angle(feature))
+
+    def get_mini_map_turn_angle(self, feature):
+        target = self.mini_map_find(feature)
+        if not target:
+            self.log_info(f'Can not find {feature} on minimap')
+            return 0
+        my_angle, my_box = self.get_angle()
+        if not my_box:
+            self.log_info(f'Can not find myself on minimap')
+            return 0
+        angle_degrees = self.calculate_angle_between(my_box, target)
+        to_turn = angle_degrees + my_angle * -1
+        if to_turn > 180:
+            to_turn -= 360
+        elif to_turn < -180:
+            to_turn += 360
+        self.log_info(f'angle: {my_angle}, angle_degrees: {angle_degrees}, to_turn: {to_turn}')
+        return to_turn
+
+    def do_walk_to_f(self, time_out=5, run=True, min_time=0, direction_fun=None, mini_map_target=None):
         self.do_send_key_down('w')
         if run:
             self.sleep(0.1)
             self.executor.interaction.do_mouse_down(btn='right')
-        if min_time:
-            self.sleep(min_time)
+        # if min_time:
+        #     self.sleep(min_time)
         start = time.time()
         found = False
         current_direction = None
+        last_turn = 0
         while time.time() - start < time_out:
-            if self.find_f():
+            if self.find_f() and (not mini_map_target or not self.mini_map_find(mini_map_target, threshold=0.85)):
                 self.log_info(f'found f while walking cost:{time.time() - start}')
                 self.executor.interaction.do_send_key('f')
                 if run:
@@ -83,7 +120,11 @@ class BaseGiTask(BaseTask):
                 self.do_send_key_up('w')
                 found = True
                 break
-            if direction_fun:
+            if mini_map_target and time.time() - last_turn > 0.5:
+                angle_to_turn = self.get_mini_map_turn_angle(mini_map_target)
+                if angle_to_turn:
+                    self.do_turn_angle(angle_to_turn, middle_click=False)
+            elif direction_fun:
                 target = direction_fun()
                 if target:
                     distance = target.center()[0] - self.width / 2
@@ -165,13 +206,18 @@ class BaseGiTask(BaseTask):
 
     def claim_rewards(self):
         self.info_set('current task', 'claim_rewards')
+        self.open_catherine()
         pick_daily_reward = self.find_pick_up_with_yellow_text('pick_daily_reward')
         if pick_daily_reward:
-            self.click(pick_daily_reward, after_sleep=3)
-            self.back(after_sleep=3)
-            f = self.wait_until(self.find_f, raise_if_not_found=True)
-            self.click(f, after_sleep=2)
-            self.send_key('space', after_sleep=2)
+            self.click(pick_daily_reward, after_sleep=1)
+            self.wait_feature('monthly_card_diamond', settle_time=1, box=self.box_of_screen(0.22, 0.23, 0.75, 0.68),
+                              post_action=lambda: self.send_key('space', after_sleep=1), raise_if_not_found=True)
+            self.back(after_sleep=1)
+            self.wait_until(self.find_f, settle_time=1, raise_if_not_found=True)
+
+    def claim_expedition(self):
+
+        self.open_catherine()
 
         pick_daily_expedition = self.find_pick_up_with_yellow_text('pick_daily_expedition')
 
@@ -215,7 +261,15 @@ class BaseGiTask(BaseTask):
 
     def go_to_catherine(self):
         self.executor.interaction.operate(self.do_go_to_catherine, block=True)
-        self.wait_feature('pick_daily_reward', settle_time=0.5,
+        self.wait_catherine()
+
+    def open_catherine(self):
+        if not self.find_one('pick_daily_reward', box=self.find_choices_box):
+            self.send_key('f', after_sleep=1)
+            self.wait_catherine()
+
+    def wait_catherine(self):
+        self.wait_feature('pick_daily_reward', settle_time=0.5, box=self.find_choices_box,
                           post_action=lambda: self.send_key('space', after_sleep=1))
 
     def go_and_craft(self):
@@ -241,15 +295,13 @@ class BaseGiTask(BaseTask):
 
     def do_go_to_craft(self):
         self.sleep(0.2)
-        self.executor.interaction.do_move_mouse_relative(120, 0)
+        self.do_turn_to_mini_map('mini_map_craft')
         self.sleep(0.2)
         self.do_walk_to_f(min_time=1.5, time_out=6)
 
     def do_go_to_catherine(self):
-        self.sleep(0.2)
-        self.executor.interaction.do_move_mouse_relative(-700, 0)
-        self.sleep(0.2)
-        self.do_walk_to_f(min_time=1.5, time_out=2)
+        self.do_turn_to_mini_map('mini_map_catherine')
+        self.do_walk_to_f(time_out=3, mini_map_target='mini_map_catherine')
 
     def find_tree(self, threshold=0.5) -> Box:
         """
@@ -336,7 +388,7 @@ class BaseGiTask(BaseTask):
         self.click_relative(0.47, 0.2, after_sleep=0.5)
         self.click_relative(0.46, 0.31, after_sleep=0.5)
 
-    def scroll_into_relic(self, n):
+    def scroll_into_relic(self, n, use_resin):
         self.go_to_relic()
         if n > 4:
             distance = self.measure_scroll()
@@ -354,11 +406,32 @@ class BaseGiTask(BaseTask):
         self.wait_confirm_dialog(btn='btn_teleport')
         self.wait_world()
         self.walk_to_f()
+        self.wait_feature('btn_ok', box='bottom_right', settle_time=1.5)
+        stamina_texts = self.ocr(box=self.box_of_screen(0.73, 0, 0.93, 0.09), match=[number_re, stamina_re], log=True)
+        if len(stamina_texts) != 2:
+            self.log_error(f'Can not find stamina text: {stamina_texts}')
+        if double_stamina_texts := self.find_boxes(stamina_texts, match=number_re):
+            double_stamina = int(double_stamina_texts[0].name)
+        else:
+            double_stamina = 1
+        if stamina_texts := self.find_boxes(stamina_texts, match=stamina_re):
+            stamina = int(stamina_texts[0].name.split('/')[0])
+        else:
+            stamina = 20
+        self.info_set('Resin', stamina)
+        self.info_set('Double resin', double_stamina)
+        if double_stamina == 0:
+            if not use_resin:
+                return False
+            else:
+                if stamina < 20:
+                    return False
         self.wait_confirm_dialog()
         self.wait_confirm_dialog()
+        return True
 
     def wait_world(self, time_out=60):
-        self.wait_until(self.in_world, time_out=time_out, raise_if_not_found=True)
+        self.wait_until(self.in_world, time_out=time_out, settle_time=1, raise_if_not_found=True)
 
     def measure_scroll(self):
         last_box = self.box_of_screen(0.39, 0.66, 0.50, 0.72)
@@ -400,38 +473,41 @@ class BaseGiTask(BaseTask):
         self.click(btn_ok, after_sleep=1)
 
     def turn_east(self):
-        angle = self.get_angle()
+        angle, _ = self.get_angle()
         self.info_set('East Angle:', angle)
         if angle is not None:
             self.executor.interaction.operate(lambda: self.do_turn_angle(angle * -1), block=True)
 
     def turn_east_and_move_to(self, fun):
-        angle = self.get_angle()
+        angle, _ = self.get_angle()
         self.info_set('East Angle:', angle)
-        self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(angle * -1, fun), block=True)
+        return self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(angle * -1, fun), block=True)
 
     def do_turn_east_and_move_to(self, angle, fun):
         self.do_turn_angle(angle)
-        self.do_walk_to_f(direction_fun=fun)
+        return self.do_walk_to_f(direction_fun=fun, time_out=12)
 
-    def do_turn_angle(self, angle):
-        self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5), down_time=0.02)
-        self.sleep(0.5)
+    def do_turn_angle(self, angle, middle_click=True):
+        if middle_click:
+            self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5),
+                                                      down_time=0.02)
+            self.sleep(0.5)
         turn_per_angle = 20.8
-        self.sleep(0.1)
         self.executor.interaction.do_move_mouse_relative(round(turn_per_angle * angle), 0)
-        self.sleep(0.1)
-        self.do_send_key_down('w')
-        self.sleep(0.2)
-        self.do_send_key_up('w')
-        self.sleep(0.6)
-        self.info_set(f'turn_angle_after', self.get_angle())
+        if middle_click:
+            self.sleep(0.1)
+            self.do_send_key_down('w')
+            self.sleep(0.2)
+            self.do_send_key_up('w')
+            self.sleep(0.6)
+        self.info_set(f'turn_angle_after', self.get_angle()[0])
 
     def get_angle(self):
         arrow_template = self.get_feature_by_name('domain_map_arrow_east')
         original_mat = arrow_template.mat
         max_conf = 0
         max_angle = None
+        max_target = None
         (h, w) = arrow_template.mat.shape[:2]
         self.log_debug(f'turn_east h:{h} w:{w}')
         center = (w // 2, h // 2)
@@ -453,14 +529,15 @@ class BaseGiTask(BaseTask):
             if target and target.confidence > max_conf:
                 max_conf = target.confidence
                 max_angle = angle
+                max_target = target
         arrow_template.mat = original_mat
         arrow_template.mask = None
         self.log_debug(f'turn_east max_conf: {max_conf} {max_angle}')
         if max_angle is not None:
             if max_angle > 180:
-                return 360 - max_angle
+                return 360 - max_angle, max_target
             else:
-                return max_angle * -1
+                return max_angle * -1, max_target
 
     def do_move_to(self, fun):
         start = time.time()
@@ -542,6 +619,7 @@ class BaseGiTask(BaseTask):
             self.log_info('no trees')
 
 
+stamina_re = re.compile(r"^\d+/\d+$")
 number_re = re.compile(r'^\d+$')
 
 white_color = {

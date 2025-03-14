@@ -104,3 +104,30 @@ msgstr ""
 
 msgid "Which Relic dungeon to Farm, in the F1 Book (1-17)"
 msgstr ""
+
+msgid "Auto Combat Config"
+msgstr ""
+
+msgid "Claim Daily Reward"
+msgstr ""
+
+msgid "Craft Resin"
+msgstr ""
+
+msgid "How to Combat, number = Switch, E = Elemental Skill(L = Long Press), Q = Elemental Burst, A = Normal Attack, best to use a shielder first"
+msgstr ""
+
+msgid "Relic Domain To Farm"
+msgstr ""
+
+msgid "Teleport to Fontaine and Claim Daily Reward and Expedition"
+msgstr ""
+
+msgid "Teleport to Fontaine and Craft Condensed Resin"
+msgstr ""
+
+msgid "current task"
+msgstr ""
+
+msgid "ensure main"
+msgstr ""

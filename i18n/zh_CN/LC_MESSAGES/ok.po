@@ -66,8 +66,8 @@ msgstr "战斗手法"
 msgid "Farm Relic Task"
 msgstr "刷圣遗物本"
 
-msgid "How to Combat, number = Switch, E = Elemental Skill(L = Long Press), Q = Elemental Burst, A = Normal Attack, best to use a shielder first"
-msgstr "数字=切人,E=元素技能(L=长按元素技能),Q=元素爆发,A=普攻,最好先使用盾角色技能"
+msgid "Number = Switch, E = Elemental Skill(L = Long Press),\n Q = Elemental Burst, A = Normal Attack,\n best to use a shielder first"
+msgstr "数字=切人,\nE=元素技能(L=长按元素技能),Q=元素爆发,A=普攻,\n最好先使用盾角色技能"
 
 msgid "Relic Domain To Farm"
 msgstr "选择刷哪个本"
@@ -77,3 +77,27 @@ msgstr "使用原粹树脂"
 
 msgid "Which Relic Domain to Farm, in the F1 Book (1-17)"
 msgstr "刷哪个圣遗物本, 在F1书中的位置(1-17)"
+
+msgid "Auto Combat Config"
+msgstr "自动战斗设置"
+
+msgid "Claim Daily Reward"
+msgstr "领取日常"
+
+msgid "Craft Resin"
+msgstr "传送枫丹合成树脂"
+
+msgid "How to Combat"
+msgstr "出招表"
+
+msgid "Teleport to Fontaine and Claim Daily Reward and Expedition"
+msgstr "传送枫丹领取日常奖励"
+
+msgid "Teleport to Fontaine and Craft Condensed Resin"
+msgstr "传送枫丹合成树脂"
+
+msgid "current task"
+msgstr "当前任务"
+
+msgid "ensure main"
+msgstr "进入主页"

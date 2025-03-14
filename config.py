@@ -44,7 +44,7 @@ def make_bottom_right_black(frame):
 auto_combat_config = ConfigOption('Auto Combat Config', {
     'Combat Sequence': '1EQ2EQ3EQ4EQ',
 }, config_description={
-    'Combat Sequence': 'How to Combat, number = Switch, E = Elemental Skill(L = Long Press), Q = Elemental Burst, A = Normal Attack, best to use a shielder first'
+    'Combat Sequence': 'Number = Switch, E = Elemental Skill(L = Long Press),\n Q = Elemental Burst, A = Normal Attack,\n best to use a shielder first'
 },
                                   description='How to Combat')
 
