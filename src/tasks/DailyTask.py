@@ -1,5 +1,6 @@
 import re
 import time
+from asyncio import timeout
 
 import win32api
 import win32con
@@ -7,54 +8,35 @@ import win32gui
 
 from ok import Logger, find_boxes_by_name, find_boxes_within_boundary
 from src.tasks.BaseGiTask import BaseGiTask
+from src.tasks.FarmRelicTask import FarmRelicTask
 
 logger = Logger.get_logger(__name__)
 
 
-class DailyTask(BaseGiTask):
+class DailyTask(FarmRelicTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "Auto Daily Task"
         self.description = "Farm Relic and Finish Daily Task"
-        self.default_config.update({
 
-        })
-
-    def alt_click(self, x, y):
-        self.send_key_down('alt')
-        self.sleep(0.02)
-        self.click_relative(x, y, move=True)
-        # self.sleep(1)
-        self.send_key_up('alt')
-
-    def mijing(self):
-        self.send_key_down('f1')
-        self.sleep(2)
-        self.alt_click(0.16,0.41)
-
-    def scroll_book(self):
-        self.scroll_relative(0.5, 0.5, -1)
-
-    def walk(self):
-        self.send_key_down('w')
-        to_walk = 5
-        self.executor.interaction.block_input()
-        self.sleep(5)
-        self.executor.interaction.deactivate()
-        self.executor.interaction.unblock_input()
 
     def run(self):
-        return self.log_info(f'Developing', notify=True)
-        self.sleep(2)
+        self.info_set('current task', 'wait login')
+        self.wait_until(self.login, time_out=90, raise_if_not_found=True)
 
-        self.test_tree()
-        # self.scroll_relative(0.5, 0.5, 1)
+        self.ensure_main()
 
-        self.sleep(2)
+        self.teleport_into_domain()
 
+        self.farm_relic_til_no_stamina()
 
-        # self.swipe_relative(0.45, 0.71, 0.45, 0.31, duration=1)
+        self.teleport_to_fontaine_catherine()
+        self.go_and_craft()
+
+        self.teleport_to_fontaine_catherine()
+        self.go_to_catherine()
+        self.claim_rewards()
 
         return
 

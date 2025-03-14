@@ -24,10 +24,12 @@ class FarmRelicTask(BaseCombatTask):
         self.log_info(f'Farm Relic Completed!', notify=True)
 
     def teleport_into_domain(self):
+        self.info_set('current task', 'teleport_into_domain')
         to_farm = self.config['Relic Domain To Farm']
         self.scroll_into_relic(to_farm)
 
     def farm_relic_til_no_stamina(self):
+        self.info_set('current task', 'farm_relic_til_no_stamina')
         while True:
             self.info_incr('Farm Relic Domain Count')
             self.wait_until(self.in_domain, time_out=40, raise_if_not_found=True)
@@ -37,7 +39,7 @@ class FarmRelicTask(BaseCombatTask):
             if not self.walk_to_f(time_out=7):
                 raise RuntimeError('Can not find the Domain key!')
             self.auto_combat(end_check=self.domain_combat_end)
-            self.turn_and_walk_to_tree()
+            self.turn_east_and_move_to(self.find_tree)
             if not self.claim_domain():
                 break
 

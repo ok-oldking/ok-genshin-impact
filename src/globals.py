@@ -14,6 +14,7 @@ class Globals(QObject):
         super().__init__()
         self._tree_model = None
         self.mini_map_arrow = None
+        self.logged_in = False
 
     @property
     def tree_model(self):

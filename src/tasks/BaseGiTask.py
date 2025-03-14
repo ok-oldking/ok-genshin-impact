@@ -5,7 +5,7 @@ from typing import List
 import cv2
 import numpy as np
 
-from ok import BaseTask, Box, calculate_color_percentage, og, Feature, ConfigOption
+from ok import BaseTask, Box, calculate_color_percentage, og, Feature
 from ok import Logger
 
 logger = Logger.get_logger(__name__)
@@ -23,14 +23,39 @@ class BaseGiTask(BaseTask):
     def find_choices_box(self):
         return self.box_of_screen(0.66, 0.36, 0.69, 0.77)
 
+    def login(self):
+        if og.my_app.logged_in:
+            return True
+        if self.in_world_or_domain():
+            self.log_info(f'in_world_or_domain set login to True')
+            og.my_app.logged_in = True
+            return True
+        if self.find_one('log_out'):
+            self.log_info(f'login click center')
+            self.click_relative(0.5, 0.5, after_sleep=3)
+            return
+        if self.find_one('monthly_card'):
+            self.log_info(f'monthly_card click center')
+            self.click_relative(0.5, 0.5, after_sleep=3)
+            return
+        if self.find_one('monthly_card_diamond'):
+            self.log_info(f'monthly_card click center')
+            self.click_relative(0.5, 0.6, after_sleep=3)
+            return
+
     def find_f(self):
-        return self.find_one("f", vertical_variance=0.14)
+        return self.find_one("f", vertical_variance=0.16)
 
     def in_world(self):
-        return self.find_one('top_left_paimon')
+        if self.find_one('top_left_paimon'):
+            og.my_app.logged_in = True
+            return True
 
     def in_world_or_domain(self):
-        return self.in_world() or self.find_one('top_left_dungeon')
+        if self.in_world():
+            og.my_app.logged_in = True
+            return True
+        return self.in_world()
 
     def in_domain(self):
         return self.find_one('top_left_dungeon')
@@ -139,6 +164,7 @@ class BaseGiTask(BaseTask):
         self.send_key('space', after_sleep=2)
 
     def claim_rewards(self):
+        self.info_set('current task', 'claim_rewards')
         pick_daily_reward = self.find_pick_up_with_yellow_text('pick_daily_reward')
         if pick_daily_reward:
             self.click(pick_daily_reward, after_sleep=3)
@@ -167,6 +193,7 @@ class BaseGiTask(BaseTask):
             return pick_daily_reward
 
     def teleport_to_fontaine_catherine(self):
+        self.info_set('current task', 'teleport_to_fontaine_catherine')
         self.send_key('m')
         self.wait_feature('map_close', raise_if_not_found=True, settle_time=1)
         self.scroll_relative(0.5, 0.5, 100)
@@ -192,6 +219,7 @@ class BaseGiTask(BaseTask):
                           post_action=lambda: self.send_key('space', after_sleep=1))
 
     def go_and_craft(self):
+        self.info_set('current task', 'go_and_craft')
         self.executor.interaction.operate(self.do_go_to_craft, block=True)
         ok = self.wait_feature('btn_ok', box='bottom_right', settle_time=0.5,
                                post_action=lambda: self.send_key('space', after_sleep=1))
@@ -349,6 +377,7 @@ class BaseGiTask(BaseTask):
         return scroll_distance
 
     def ensure_main(self):
+        self.info_set('current task', 'ensure main')
         start = time.time()
         while not self.in_world() and time.time() - start < 10:
             self.send_key('esc')
