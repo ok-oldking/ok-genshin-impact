@@ -16,6 +16,13 @@ class FarmRelicTask(BaseCombatTask):
             'Combat Sequence': '1EQ2EQ3EQ4EQ',
             'Use Original Resin': False
         })
+        self.config_description.update({
+            'Relic Domain To Farm': 'Which Relic Domain to Farm, in the F1 Book (1-17)'
+        })
+        self.config_description.update({
+            'Use Original Resin': 'Only use Condensed Resin if Turned Off'
+        })
+
 
     def run(self):
         if self.teleport_into_domain():

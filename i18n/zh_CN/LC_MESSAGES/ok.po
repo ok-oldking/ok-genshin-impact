@@ -81,6 +81,9 @@ msgstr "选择刷哪个本"
 msgid "Use Original Resin"
 msgstr "使用原粹树脂"
 
+msgid "Only use Condensed Resin if Turned Off"
+msgstr "关闭则只使用双倍体力"
+
 msgid "Which Relic Domain to Farm, in the F1 Book (1-17)"
 msgstr "刷哪个圣遗物本, 在F1书中的位置(1-17)"
 
@@ -91,7 +94,7 @@ msgid "Claim Daily Reward"
 msgstr "领取日常"
 
 msgid "Craft Resin"
-msgstr "传送枫丹合成树脂"
+msgstr "合成树脂"
 
 msgid "How to Combat"
 msgstr "出招表"

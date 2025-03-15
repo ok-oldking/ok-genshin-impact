@@ -3,7 +3,6 @@ import os
 import numpy as np
 
 from ok import ConfigOption
-from src.GenshinInteractionLocal import GenshinInteraction
 
 version = "v5.0.11"
 
@@ -72,7 +71,7 @@ config = {
         'exe': ['GenshinImpact.exe', 'YuanShen.exe'],
         # 'calculate_pc_exe_path': calculate_pc_exe_path,
         # 'hwnd_class': 'UnrealWindow',
-        'interaction': GenshinInteraction,
+        'interaction': 'Genshin',
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
         # 'bit_blt_render_full': True,
         'check_hdr': True,

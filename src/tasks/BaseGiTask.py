@@ -226,6 +226,16 @@ class BaseGiTask(BaseTask):
             self.wait_click_feature('claim_all', settle_time=0.5)
             self.wait_click_feature('dispatch_again', settle_time=0.5, after_sleep=1.5)
             self.back(after_sleep=3)
+            self.ensure_main()
+        else:
+            self.end_chat()
+
+    def end_chat(self):
+        dots = self.find_feature("chat_3_dots", box=self.find_choices_box)
+        if dots:
+            self.click(dots[-1])
+            self.wait_until(self.in_world, settle_time=0.5,
+                            post_action=lambda: self.send_key('space', after_sleep=1))
 
     def find_pick_up_with_yellow_text(self, feature):
         pick_daily_reward = self.find_one(feature, box=self.find_choices_box)
@@ -278,16 +288,16 @@ class BaseGiTask(BaseTask):
         ok = self.wait_feature('btn_ok', box='bottom_right', settle_time=0.5,
                                post_action=lambda: self.send_key('space', after_sleep=1))
         self.click(ok, after_sleep=1)
-        self.back(after_sleep=1)
-        self.back(after_sleep=1)
+        self.ensure_main()
 
     def claim_daily_book(self):
-        self.open_book()
-        if box := self.find_red_dot(box='box_commission'):
-            self.click(box, after_sleep=1)
-            if gift := self.find_one('daily_claim_gift', horizontal_variance=0.05, vertical_variance=0.05):
-                self.click(gift, after_sleep=1)
-        self.ensure_main()
+        if self.find_red_dot(box='box_top_right_book'):
+            self.open_book()
+            if box := self.find_red_dot(box='box_commission'):
+                self.click(box, after_sleep=1)
+                if gift := self.find_one('daily_claim_gift', horizontal_variance=0.05, vertical_variance=0.05):
+                    self.click(gift, after_sleep=1)
+            self.ensure_main()
 
     def find_red_dot(self, box):
         if self.find_one('red_dot', box=box):
@@ -512,8 +522,7 @@ class BaseGiTask(BaseTask):
         self.log_debug(f'turn_east h:{h} w:{w}')
         center = (w // 2, h // 2)
         target_box = self.get_box_by_name('domain_map_arrow_east')
-        target_box = target_box.copy(x_offset=-target_box.width * 0.2, y_offset=-target_box.height * 0.2,
-                                     width_offset=target_box.width * 0.4, height_offset=target_box.height * 0.4)
+        target_box = target_box.scale(1.4)
         if self.debug:
             self.screenshot('arrow_original', original_mat)
         for angle in range(0, 360):
@@ -523,7 +532,7 @@ class BaseGiTask(BaseTask):
             arrow_template.mask = np.where(np.all(arrow_template.mat == [0, 0, 0], axis=2), 0, 255).astype(np.uint8)
 
             target = self.find_one(f'arrow_{angle}', box=target_box,
-                                   template=arrow_template, threshold=0.5)
+                                   template=arrow_template, threshold=0.3)
             if self.debug and angle % 90 == 0:
                 self.screenshot(f'arrow_rotated_{angle}', arrow_template.mat)
             if target and target.confidence > max_conf:
@@ -538,6 +547,7 @@ class BaseGiTask(BaseTask):
                 return 360 - max_angle, max_target
             else:
                 return max_angle * -1, max_target
+        return 0, None
 
     def do_move_to(self, fun):
         start = time.time()

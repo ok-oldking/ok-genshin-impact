@@ -13,6 +13,9 @@ class DailyTask(FarmRelicTask):
 
 
     def run(self):
+        self.claim_mail()
+        self.claim_battle_pass()
+        return
         self.info_set('current task', 'wait login')
         self.wait_until(self.login, time_out=180, raise_if_not_found=True)
 
