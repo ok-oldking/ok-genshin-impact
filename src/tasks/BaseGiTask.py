@@ -104,7 +104,7 @@ class BaseGiTask(BaseTask):
         self.do_send_key_down('w')
         if run:
             self.sleep(0.1)
-            self.executor.interaction.do_mouse_down(btn='right')
+            self.executor.interaction.do_mouse_down(key='right')
         # if min_time:
         #     self.sleep(min_time)
         start = time.time()
@@ -116,7 +116,7 @@ class BaseGiTask(BaseTask):
                 self.log_info(f'found f while walking cost:{time.time() - start}')
                 self.executor.interaction.do_send_key('f')
                 if run:
-                    self.executor.interaction.do_mouse_up(btn='right')
+                    self.executor.interaction.do_mouse_up(key='right')
                 self.do_send_key_up('w')
                 found = True
                 break
@@ -148,7 +148,7 @@ class BaseGiTask(BaseTask):
         if current_direction:
             self.do_send_key_up(current_direction)
         if run:
-            self.executor.interaction.do_mouse_up(btn='right')
+            self.executor.interaction.do_mouse_up(key='right')
         self.do_send_key_up('w')
 
         if found:
