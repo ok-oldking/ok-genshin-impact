@@ -15,7 +15,9 @@
 
 **语言:** [English](README.md) | [简体中文](README_CN.md)
 
-**免费使用，未来开源。**
+**免费使用, 以后会开源.**
+**现在源码可以参考我的开源鸣潮项目: [OK-WW](https://github.com/ok-oldking/ok-wuthering-waves)**
+
 [⭐️ Star on GitHub](https://github.com/ok-oldking/ok-genshin-impact)
 
 ![OK-GI Demo](readmes/img_4.png)

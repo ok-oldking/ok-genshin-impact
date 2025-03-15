@@ -14,7 +14,8 @@
 
 **Languages:** [English](README.md) | [简体中文](README_CN.md)
 
-**Free to use, future open-source.**
+**Free to use, will open-source in the future.**
+**You can check out my wuthering waves project, [OK-WW](https://github.com/ok-oldking/ok-wuthering-waves)**
 
 ![OK-GI Demo](readmes/img_4.png)
 

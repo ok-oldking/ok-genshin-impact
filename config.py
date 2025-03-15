@@ -63,7 +63,10 @@ config = {
     },
     'ocr': {
         'lib': 'rapidocr_openvino',
-        'target_height': 540
+        'target_height': 540,
+        # 'det_model_path': os.path.join('assets', 'ocr_models', 'en_PP-OCRv3_det_infer.onnx'),
+        # 'rec_model_path': os.path.join('assets', 'ocr_models', 'en_PP-OCRv4_rec_infer.onnx'),
+        # 'rec_keys_path': os.path.join('assets', 'ocr_models', 'ppocr_keys_v1.txt'),
     },
     'windows': {  # required  when supporting windows game
         'exe': ['GenshinImpact.exe', 'YuanShen.exe'],
@@ -153,6 +156,7 @@ config = {
         ["src.tasks.AutoPickTask", "AutoPickTask"],
         ["src.tasks.AutoDialogTask", "AutoDialogTask"],
         ["src.tasks.AutoLoginTask", "AutoLoginTask"],
+        ["src.tasks.AutoCombatTask", "AutoCombatTask"],
     ],
     'my_app': ['src.globals', 'Globals'],
     'global_configs': [auto_combat_config],

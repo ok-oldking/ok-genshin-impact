@@ -7,6 +7,7 @@ import numpy as np
 from ok import BaseTask, find_boxes_within_boundary, find_boxes_by_name, Box, calculate_color_percentage, og
 from ok import Logger
 from src.tasks.BaseGiTask import BaseGiTask, white_color
+from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
 
 logger = Logger.get_logger(__name__)
 
@@ -18,12 +19,38 @@ class BaseCombatTask(BaseGiTask):
         self.default_config.update({
             'Combat Sequence': None,
         })
+        self._in_combat = False
+        self.action_index = 0
+        self.last_action_start = 0
         self.config_type['Combat Sequence'] = {'type': "global"}
         self.combat_config = self.get_global_config('Auto Combat Config')
 
+    def check_health_bar(self):
+        if self._in_combat:
+            min_height = self.height_of_screen(12 / 2160)
+            max_height = min_height * 3
+            min_width = self.width_of_screen(12 / 3840)
+        else:
+            min_height = self.height_of_screen(12 / 2160)
+            max_height = min_height * 3
+            min_width = self.width_of_screen(100 / 3840)
+
+        boxes = find_color_rectangles(self.frame, enemy_health_bar_red_color, min_width, min_height,
+                                      max_height=max_height)
+
+        if len(boxes) > 0:
+            if self.debug:
+                self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
+            return True
+
+        return False
+
     def auto_combat(self, time_out=120, end_check=None):
-        action_index = 0
         start = time.time()
+        if start - self.last_action_start > 15:
+            self.log_info(f'reset auto combat sequence')
+            self.last_action_start = time.time()
+            self.action_index = 0
         combat_str = self.combat_config.get('Combat Sequence').strip()
         while True:
             elapsed = time.time() - start
@@ -34,7 +61,7 @@ class BaseCombatTask(BaseGiTask):
                     self.screenshot('combat_end')
                 self.info_incr('Combat Count')
                 return True
-            action = combat_str[action_index % len(combat_str)]
+            action = combat_str[self.action_index % len(combat_str)]
             if to_switch := safe_parse_int(action):  # switch command
                 current_char = self.get_current_char()
                 if current_char != to_switch:
@@ -64,7 +91,7 @@ class BaseCombatTask(BaseGiTask):
                 self.combat_sleep()
             else:
                 raise Exception('Unknown action: {}'.format(action))
-            action_index += 1
+            self.action_index += 1
 
     def get_cd(self, box_name):
         cd_text = self.ocr(box=box_name, match=cd_re)
@@ -133,4 +160,10 @@ q_white_color = {
     'r': (210, 255),  # Red range
     'g': (210, 255),  # Green range
     'b': (210, 255)  # Blue range
+}
+
+enemy_health_bar_red_color = {
+    'r': (245, 255),  # Red range
+    'g': (80, 100),  # Green range
+    'b': (80, 100)  # Blue range
 }

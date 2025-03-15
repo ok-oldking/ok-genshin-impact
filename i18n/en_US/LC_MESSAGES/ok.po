@@ -131,3 +131,15 @@ msgstr ""
 
 msgid "ensure main"
 msgstr ""
+
+msgid "Auto Combat"
+msgstr ""
+
+msgid "Auto Combat in Game World or Domain"
+msgstr ""
+
+msgid ""
+"Number = Switch, E = Elemental Skill(L = Long Press),\n"
+" Q = Elemental Burst, A = Normal Attack,\n"
+" best to use a shielder first"
+msgstr ""
