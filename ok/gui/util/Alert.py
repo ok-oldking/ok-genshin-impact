@@ -26,5 +26,4 @@ def alert_info(message, tray=False):
 
 
 def alert_error(message, tray=False):
-    logger.error(message)
     communicate.notification.emit(None, message, True, tray)
