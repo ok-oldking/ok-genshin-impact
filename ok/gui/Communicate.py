@@ -12,7 +12,7 @@ class Communicate(QObject):
     task_done = Signal(object)
     window = Signal(bool, int, int, int, int, int, int, float)
     loading_progress = Signal(str)
-    notification = Signal(str, str, bool, bool)
+    notification = Signal(str, str, bool, bool, str)
     executor_paused: Signal = Signal(bool)
     screenshot = Signal(object, str)
     adb_devices: Signal = Signal(bool)

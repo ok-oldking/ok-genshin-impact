@@ -112,7 +112,10 @@ msgid "ensure main"
 msgstr "进入主页"
 
 msgid "Auto Combat"
-msgstr ""
+msgstr "自动战斗"
 
 msgid "Auto Combat in Game World or Domain"
-msgstr ""
+msgstr "在大世界和副本中开启自动战斗"
+
+msgid "Daily Task Completed!"
+msgstr "日常任务完成!"

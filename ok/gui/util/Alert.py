@@ -21,9 +21,9 @@ def show_alert(title, message):
     msg.exec()
 
 
-def alert_info(message, tray=False):
-    communicate.notification.emit(None, message, False, tray)
+def alert_info(message, tray=False, show_tab=None):
+    communicate.notification.emit(None, message, False, tray, show_tab)
 
 
-def alert_error(message, tray=False):
-    communicate.notification.emit(None, message, True, tray)
+def alert_error(message, tray=False, show_tab=None):
+    communicate.notification.emit(None, message, True, tray, show_tab)

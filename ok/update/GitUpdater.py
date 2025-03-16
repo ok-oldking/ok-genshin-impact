@@ -70,6 +70,7 @@ class GitUpdater:
         self.version_to_hash = {}
         self.log_tailer = None
         self.yanked = False
+        self.latest_ver = None
         self.outdated = False
         self.download_monitor = None
         self.handler = Handler(exit_event, self.__class__.__name__)
@@ -323,12 +324,17 @@ class GitUpdater:
         path = os.path.join('repo', version)
         logger.info(f'start cloning repo {path}')
         repo = check_repo(path, self.url)
+        if repo is not None:
+            try:
+                repo.git.fetch('origin', f'refs/tags/{version}:refs/tags/{version}', '--depth=1', '--force')
+                repo.git.checkout(version, force=True)
+            except Exception as e:
+                logger.error(f'check_out_version error: {e}')
+                repo = None
         if repo is None:
             delete_if_exists(path)
             repo = git.Repo.clone_from(self.url, path, branch=version, depth=depth)
-        else:
-            repo.git.fetch('origin', f'refs/tags/{version}:refs/tags/{version}', '--depth=1', '--force')
-            repo.git.checkout(version, force=True)
+
         remove_ok_requirements(path, version)
 
         logger.info(f'clone repo success {path}')
@@ -382,6 +388,7 @@ class GitUpdater:
             lts_hash = ''
             # Parse the output to get tag names
             hash_to_ver = {}
+
             for line in remote_refs.splitlines():
                 if line.endswith('^{}') and 'refs/tags/' in line:
                     hash, tag = line[:-3].split('refs/tags/')
@@ -411,6 +418,10 @@ class GitUpdater:
                 reverse=True)
             logger.info(f'done fetching remote version size {len(tags)}')
             self.versions = tags
+            if not self.latest_ver and self.versions and is_newer_or_eq_version(self.versions[0], self.launcher_config.get('app_version')) > 0:
+                self.latest_ver = self.versions[0]
+                logger.info(f'latest version is {self.latest_ver}')
+                alert_info(QCoreApplication.translate('app', 'New Version {} Available').format(self.latest_ver), tray=True, show_tab='about')
             self.auto_update()
             communicate.update_running.emit(False, False)
             communicate.versions.emit()

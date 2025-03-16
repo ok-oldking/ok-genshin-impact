@@ -21,10 +21,10 @@ class StartController(QObject):
         self.handler = Handler(exit_event, __name__)
         self.start_timeout = app_config.get('start_timeout', 60)
 
-    def start(self, task=None):
-        self.handler.post(lambda: self.do_start(task))
+    def start(self, task=None, exit_after=False):
+        self.handler.post(lambda: self.do_start(task, exit_after))
 
-    def do_start(self, task=None):
+    def do_start(self, task=None, exit_after=False):
         communicate.starting_emulator.emit(False, None, self.start_timeout)
         try:
             og.device_manager.do_refresh(True)
@@ -63,6 +63,12 @@ class StartController(QObject):
             if error:
                 communicate.starting_emulator.emit(True, error, 0)
                 return
+        if isinstance(task, int):
+            task = og.executor.onetime_tasks[task]
+            logger.info(f"enable task {task}")
+            if exit_after and task:
+                task.exit_after_task = True
+                communicate.task.emit(task)
         if task:
             task.enable()
             task.unpause()
