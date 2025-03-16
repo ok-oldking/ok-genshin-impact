@@ -10,12 +10,10 @@ class DailyTask(FarmRelicTask):
         super().__init__(*args, **kwargs)
         self.name = "Auto Daily Task"
         self.description = "Farm Relic and Finish Daily Task"
+        self.add_exit_after_config()
 
 
     def run(self):
-        self.claim_mail()
-        self.claim_battle_pass()
-        return
         self.info_set('current task', 'wait login')
         self.wait_until(self.login, time_out=180, raise_if_not_found=True)
 
@@ -36,6 +34,7 @@ class DailyTask(FarmRelicTask):
 
         self.claim_mail()
         self.claim_battle_pass()
+        self.log_info(f'Daily Task Completed!')
         return
 
     def claim_mail(self):

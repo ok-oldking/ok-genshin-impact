@@ -491,7 +491,11 @@ class BaseGiTask(BaseTask):
     def turn_east_and_move_to(self, fun):
         angle, _ = self.get_angle()
         self.info_set('East Angle:', angle)
-        return self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(angle * -1, fun), block=True)
+        self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(angle * -1, fun), block=True)
+        if self.find_f():
+            if self.debug:
+                self.screenshot('f_again')
+            raise RuntimeError(f'Failed to Claim the Domain Reward, maybe your Inventory is Full!')
 
     def do_turn_east_and_move_to(self, angle, fun):
         self.do_turn_angle(angle)

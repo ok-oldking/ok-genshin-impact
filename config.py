@@ -1,4 +1,6 @@
 import os
+import platform
+import re
 
 import numpy as np
 
@@ -47,6 +49,13 @@ auto_combat_config = ConfigOption('Auto Combat Config', {
 },
                                   description='How to Combat')
 
+
+def calculate_pc_exe_path(running_path):
+    if running_path:
+        return running_path
+    else:
+        return get_genshin_executable_path()
+
 config = {
     'debug': False,  # Optional, default: False
     'use_gui': True,
@@ -69,7 +78,7 @@ config = {
     },
     'windows': {  # required  when supporting windows game
         'exe': ['GenshinImpact.exe', 'YuanShen.exe'],
-        # 'calculate_pc_exe_path': calculate_pc_exe_path,
+        'calculate_pc_exe_path': calculate_pc_exe_path,
         # 'hwnd_class': 'UnrealWindow',
         'interaction': 'Genshin',
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
@@ -160,3 +169,150 @@ config = {
     'my_app': ['src.globals', 'Globals'],
     'global_configs': [auto_combat_config],
 }
+
+
+def get_genshin_executable_path():
+    """
+    Attempts to locate the Genshin Impact executable path.
+
+    This function tries several methods to find the game's installation directory
+    and then constructs the full path to the executable.  It prioritizes Steam installs.
+
+    Returns:
+        str: The full path to the Genshin Impact executable, or None if not found.
+    """
+
+    # 1. Try to find it in Steam
+    steam_path = find_steam_game_path("Genshin Impact")
+    if steam_path:
+        return steam_path
+
+    # 2. Try to find it in the Windows registry (if on Windows)
+    if platform.system() == "Windows":
+        registry_path = get_genshin_install_path_from_registry("原神")
+        if registry_path:
+            executable_path = os.path.join(registry_path, 'Genshin Impact game', "YuanShen.exe")
+            if os.path.exists(executable_path):
+                return executable_path
+            else:
+                print(
+                    "Warning: Registry entry found, but executable not at expected location.{}".format(executable_path))
+                return None  # Or handle the error differently
+        else:
+            registry_path = get_genshin_install_path_from_registry("Genshin Impact")
+            if registry_path:
+                executable_path = os.path.join(registry_path, 'Genshin Impact game', "GenshinImpact.exe")
+                if os.path.exists(executable_path):
+                    return executable_path
+                else:
+                    print("Warning: Registry entry found, but executable not at expected location. {}".format(
+                        executable_path))
+                    return None  # Or handle the error differently
+    else:
+        print("Warning: Registry lookup is only supported on Windows.")
+
+    # 3. Try some common installation paths (least reliable)
+    common_paths = [
+        r"C:\Program Files\Genshin Impact\Genshin Impact Game\GenshinImpact.exe",
+        r"D:\Program Files\Genshin Impact\Genshin Impact Game\GenshinImpact.exe",
+        r"C:\Program Files\Genshin Impact\GenshinImpact.exe",  # Older versions
+        r"D:\Program Files\Genshin Impact\GenshinImpact.exe",  # Older versions
+    ]
+
+    for path in common_paths:
+        if os.path.exists(path):
+            return path
+
+    print("Error: Genshin Impact executable not found.")
+    return None
+
+
+def find_steam_game_path(game_name):
+    """
+    Attempts to find the install location of a game via Steam's libraryfolders.vdf file.
+
+    Args:
+        game_name (str): The name of the game to search for.
+
+    Returns:
+        str: The full path to the game executable, or None if not found.
+    """
+
+    if platform.system() != "Windows":  # steam paths differ on other systems
+        print("Steam path lookup only implemented for Windows at the moment")  # Add Mac/Linux support if needed
+        return None
+
+    try:
+        # Find Steam's install path.  Uses a registry lookup.
+        import winreg  # Requires pywin32 module: pip install pywin32
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Valve\Steam")
+        steam_install_path = winreg.QueryValueEx(key, "InstallPath")[0]
+        winreg.CloseKey(key)
+
+        # Locate the libraryfolders.vdf file
+        libraryfolders_path = os.path.join(steam_install_path, "config", "libraryfolders.vdf")
+
+        if not os.path.exists(libraryfolders_path):
+            print("Error: libraryfolders.vdf not found.")
+            return None
+
+        with open(libraryfolders_path, "r", encoding="utf-8") as f:
+            vdf_content = f.read()
+
+        # Regular expression to find appID
+        game_appid = None
+        if game_name == "Genshin Impact":
+            game_appid = '2094880'  # Hardcode for Genshin
+
+        # Find install path in VDF file.  This relies on game_appid being correct!
+        install_path_match = re.search(rf'"path"\s+"(.*?)"[\s\S]*?"{game_appid}"', vdf_content)
+
+        if install_path_match:
+            install_path = install_path_match.group(1)
+            executable_path = os.path.join(install_path, "steamapps", "common", "Genshin Impact", "GenshinImpact.exe")
+            if os.path.exists(executable_path):
+                return executable_path
+            else:
+                executable_path = os.path.join(install_path, "steamapps", "common", "Genshin Impact", "Yuanshen.exe")
+                if os.path.exists(executable_path):
+                    return executable_path
+                else:
+                    print(f"Executable not found at {executable_path}")
+                    return None
+
+        print(f"{game_name} appID not found in libraryfolders.vdf (or is not installed).")
+        return None
+    except Exception as e:
+        print(f"Error finding Steam game path: {e}")
+        return None
+
+
+def get_genshin_install_path_from_registry(name):
+    """
+    Retrieves the Genshin Impact installation path from the Windows registry.
+
+    Requires the pywin32 package to be installed.  Use `pip install pywin32`.
+
+    Returns:
+        str: The installation path, or None if not found.
+    """
+    if platform.system() != "Windows":
+        print("Warning: Registry lookup is only supported on Windows.")
+        return None
+
+    try:
+        import winreg  # Requires pywin32 module: pip install pywin32
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                             r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\\" + name)
+        install_path = winreg.QueryValueEx(key, "InstallPath")[0]
+        winreg.CloseKey(key)
+        return install_path
+    except FileNotFoundError:
+        print("Error: Genshin Impact registry key not found.")
+        return None
+    except ImportError:
+        print("Error: pywin32 module not installed.  Please install it using 'pip install pywin32'.")
+        return None
+    except Exception as e:
+        print(f"Error accessing registry: {e}")
+        return None

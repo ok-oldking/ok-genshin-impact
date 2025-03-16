@@ -49,8 +49,8 @@ class BaseCombatTask(BaseGiTask):
         start = time.time()
         if start - self.last_action_start > 15:
             self.log_info(f'reset auto combat sequence')
-            self.last_action_start = time.time()
             self.action_index = 0
+        self.last_action_start = time.time()
         combat_str = self.combat_config.get('Combat Sequence').strip()
         while True:
             elapsed = time.time() - start
@@ -66,7 +66,7 @@ class BaseCombatTask(BaseGiTask):
                 current_char = self.get_current_char()
                 if current_char != to_switch:
                     self.send_key(to_switch)
-                    self.combat_sleep(0.2)
+                    self.combat_sleep()
                     continue
             elif action.upper() == 'E' or action.upper() == 'L':
                 cd = self.get_cd('box_e')
@@ -103,9 +103,9 @@ class BaseCombatTask(BaseGiTask):
     def combat_sleep(self, to_sleep=0):
         if to_sleep == 0:
             if self.hwnd.is_foreground():
-                to_sleep = 0.2
+                to_sleep = 0.1
             else:
-                to_sleep = 0.2
+                to_sleep = 0.1
         self.sleep(to_sleep)
 
     def get_current_char(self):
