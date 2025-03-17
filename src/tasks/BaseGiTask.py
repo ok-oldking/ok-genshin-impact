@@ -401,13 +401,14 @@ class BaseGiTask(BaseTask):
     def scroll_into_relic(self, n, use_resin):
         self.go_to_relic()
         if n > 4:
-            distance = self.measure_scroll()
-            self.sleep(1)
-            book_locations = self.find_feature('book_location', horizontal_variance=0.05, vertical_variance=1)
-            distance3 = book_locations[-1].y - book_locations[0].y
-            scroll_delta_per_row = -1 * round(distance3 / 3 / distance)
+            # distance = self.measure_scroll()
+            # self.sleep(1)
+            # book_locations = self.find_feature('book_location', horizontal_variance=0.05, vertical_variance=1)
+            # distance3 = book_locations[-1].y - book_locations[0].y
+            # scroll_delta_per_row = -1 * round(distance3 / 3 / distance)
             row_to_scroll = n - 4
-            logger.debug(f"scroll_relic book_locations:{len(book_locations)} distance3:{distance3} scroll_delta_per_row:{scroll_delta_per_row}")
+            scroll_delta_per_row = -8
+            logger.debug(f"scroll_relic book_locations: scroll_delta_per_row:{scroll_delta_per_row}")
             self.scroll_relative(0.48, 0.32, row_to_scroll * scroll_delta_per_row + 1)
             self.sleep(1)
             n = 4
@@ -491,11 +492,12 @@ class BaseGiTask(BaseTask):
     def turn_east_and_move_to(self, fun):
         angle, _ = self.get_angle()
         self.info_set('East Angle:', angle)
-        self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(angle * -1, fun), block=True)
+        success = self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(angle * -1, fun), block=True)
         if self.find_f():
             if self.debug:
                 self.screenshot('f_again')
             raise RuntimeError(f'Failed to Claim the Domain Reward, maybe your Inventory is Full!')
+        return success
 
     def do_turn_east_and_move_to(self, angle, fun):
         self.do_turn_angle(angle)
