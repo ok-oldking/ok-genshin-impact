@@ -153,6 +153,11 @@ class BaseGiTask(BaseTask):
 
         if found:
             self.sleep(1)
+        f_count = 0
+        while self.find_f() and f_count < 3:
+            self.executor.interaction.do_send_key('f')
+            self.sleep(1)
+            f_count += 1
         return found
 
     def do_send_key_down(self, key):
@@ -582,6 +587,22 @@ class BaseGiTask(BaseTask):
                 return
             self.next_frame()
 
+    def claim_mail(self):
+        self.back()
+        self.wait_feature('esc_achievements', settle_time=1)
+        if mail := self.find_red_dot('box_mail'):
+            self.click(mail)
+            self.wait_click_feature('claim_all', box='bottom_left', settle_time=1)
+        self.ensure_main()
+
+    def claim_battle_pass(self):
+        if self.find_red_dot('box_top_right_battle_pass'):
+            self.send_key('f4')
+            self.wait_feature('top_right_close_btn', settle_time=1)
+            if dots := self.find_red_dot('battle_pass_quests'):
+                self.click(dots, after_sleep=1)
+                self.click_box('battle_pass_claim_all', after_sleep=1)
+                self.ensure_main()
 
 
     def do_turn_to(self, fun):

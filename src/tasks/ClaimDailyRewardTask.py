@@ -13,10 +13,15 @@ class ClaimDailyRewardTask(BaseGiTask):
 
     def run(self):
         self.ensure_main()
+
         self.teleport_to_fontaine_catherine()
+
         self.claim_daily_book()
         self.go_to_catherine()
         self.claim_rewards()
         self.claim_expedition()
+        self.claim_mail()
+        self.claim_battle_pass()
+        self.log_info(f'Daily Task Completed!')
         return
 

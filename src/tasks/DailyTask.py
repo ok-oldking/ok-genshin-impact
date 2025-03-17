@@ -37,27 +37,4 @@ class DailyTask(FarmRelicTask):
         self.log_info(f'Daily Task Completed!')
         return
 
-    def claim_mail(self):
-        self.back()
-        self.wait_feature('esc_achievements', settle_time=1)
-        if mail := self.find_red_dot('box_mail'):
-            self.click(mail)
-            self.wait_click_feature('claim_all', box='bottom_left', settle_time=1)
-        self.ensure_main()
 
-    def claim_battle_pass(self):
-        if self.find_red_dot('box_top_right_battle_pass'):
-            self.send_key('f4')
-            self.wait_feature('top_right_close_btn', settle_time=1)
-            if dots := self.find_red_dot('battle_pass_quests'):
-                self.click(dots, after_sleep=1)
-                self.click_box('battle_pass_claim_all', after_sleep=1)
-                self.ensure_main()
-
-
-    def battle(self):
-        for i in range(4):
-            self.send_key(str(i+1))
-            self.sleep(0.3)
-            self.send_key('e')
-            self.sleep(1.5)
