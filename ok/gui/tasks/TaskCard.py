@@ -123,6 +123,20 @@ class TaskButtons(QWidget):
         self.layout.addWidget(button)
 
     def start_clicked(self):
+        if self.task.first_run_alert:
+            if not self.task.config.get('_first_run_alert'):
+                title = og.app.tr('Alert')
+                content = og.app.tr(self.task.first_run_alert)
+                from qfluentwidgets import Dialog
+                w = Dialog(title, content, self.window())
+                # w.cancelButton.setVisible(False)
+                w.yesButton.setText(og.app.tr('Confirm'))
+                w.cancelButton.setText(og.app.tr('Cancel'))
+                w.setContentCopyable(True)
+                if w.exec():
+                    self.task.config['_first_run_alert'] = self.task.first_run_alert
+                else:
+                    return
         og.app.start_controller.start(self.task)
 
     def stop_clicked(self):

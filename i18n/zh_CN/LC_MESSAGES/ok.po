@@ -119,3 +119,6 @@ msgstr "在大世界和副本中开启自动战斗"
 
 msgid "Daily Task Completed!"
 msgstr "日常任务完成!"
+
+msgid "If this task is executed while the game is in the background, your mouse will be locked temperately while the game character is moving due to game and system limitations."
+msgstr "如果游戏在后台运行时执行此任务，由于游戏和系统限制，当游戏角色移动时，您的鼠标将被暂时锁定。"
