@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtWidgets import QVBoxLayout, QApplication
-from qfluentwidgets import BodyLabel, PushButton
+from qfluentwidgets import BodyLabel, PushButton, SplitTitleBar
 from qframelesswindow import StandardTitleBar
 
 from ok import Logger, og
@@ -16,10 +16,8 @@ class MessageWindow(BaseWindow):
         super().__init__()
         self.exit_event = exit_event
         self.message = message
-        self.title_bar = StandardTitleBar(self)
-        self.title_bar.maxBtn.hide()
-        self.title_bar.minBtn.hide()
-        self.setTitleBar(self.title_bar)
+        self.setTitleBar(SplitTitleBar(self))
+        self.titleBar.raise_()
         self.setFixedSize(500, 200)
         self.setWindowTitle(title)
         self.setWindowIcon(icon)
@@ -34,7 +32,7 @@ class MessageWindow(BaseWindow):
         self.confirm_button.clicked.connect(self.quit)
         self.confirm_button.setMaximumWidth(150)
 
-        StyleSheet.MESSAGE_WINDOW.apply(self)
+        # StyleSheet.MESSAGE_WINDOW.apply(self)
         # self.activateWindow()
         logger.info(f'MessageWindow init {message}')
 

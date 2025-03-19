@@ -36,6 +36,7 @@ def init_app_config():
         logger.info(f"No translation available for {locale}, falling back to English/default.")
     # qconfig.theme = cfg.themeMode.value
     setTheme(Theme.DARK)
+    logger.info('set them to DARK')
     return app, locale
 
 
