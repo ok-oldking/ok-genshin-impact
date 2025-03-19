@@ -1,3 +1,5 @@
+from qfluentwidgets import FluentIcon
+
 from ok import Logger
 from src.tasks.FarmRelicTask import FarmRelicTask
 
@@ -10,6 +12,8 @@ class DailyTask(FarmRelicTask):
         super().__init__(*args, **kwargs)
         self.name = "Auto Daily Task"
         self.description = "Farm Relic and Finish Daily Task"
+        self.icon = FluentIcon.CAR
+        self.show_create_shortcut = True
         self.add_exit_after_config()
         self.add_first_run_alert(
             "If this task is executed while the game is in the background, your mouse will be locked temperately while the game character is moving due to game and system limitations.")

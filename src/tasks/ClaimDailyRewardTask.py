@@ -22,6 +22,6 @@ class ClaimDailyRewardTask(BaseGiTask):
         self.claim_expedition()
         self.claim_mail()
         self.claim_battle_pass()
-        self.log_info(f'Daily Task Completed!')
+        self.log_info(f'Daily Task Completed!', notify=True)
         return
 

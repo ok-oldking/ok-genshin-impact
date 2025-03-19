@@ -13,6 +13,8 @@
 [![Discord](https://img.shields.io/badge/Discord-加入社区-blue)](https://discord.gg/Q8utYcPQA3)
 [![QQ频道](https://img.shields.io/badge/QQ频道-加入频道-blue)](https://pd.qq.com/s/e2wvbypn7)
 
+演示和教程 [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/9iURRmXQHew)
+
 **说明:** [English](README_EN.md) | [简体中文](README.md)
 
 **免费使用, 以后会开源.**
@@ -44,12 +46,21 @@
 3. 安装依赖项: `pip install -r requirements.txt`
 4. 以管理员权限运行脚本: `python main.py`
 
-## 关于游戏后台运行的说明
+### 关于游戏后台运行的说明
 
 1. **游戏和系统限制：**
     * 由于《原神》和 Windows 操作系统本身的固有局限性，当您玩其他游戏（例如《鸣潮》，它会锁定您的鼠标位置）时，后台执行是不兼容的。
 2. **鼠标和键盘锁定：**
     * 当任务需要游戏内角色移动或转向时，您的鼠标和键盘将被暂时锁定。这是《原神》在后台运行时所必需的。如果您在前台玩《原神》，则不会发生锁定。
+
+### 命令行参数
+
+```
+ok-ww.exe -t 1 -e
+```
+
+- -t 或 --task 代表启动后自动执行第几个任务, 1就是第一个, 一条龙任务
+- -e 或 --exit 加上代表如果执行完任务之后自动退出
 
 ## 重要游戏设置
 
@@ -71,7 +82,6 @@
 5. **版本过旧:** 确保您使用的是最新版本的 OK-GI。
 6. **性能:** 在游戏中保持稳定的 60 FPS，如果需要，降低分辨率。
 7. **进一步帮助:** 如果问题仍然存在，请提交错误报告。
-8.
 
 ## 免责声明
 
