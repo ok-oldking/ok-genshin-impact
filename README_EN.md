@@ -44,7 +44,7 @@
 3. Install dependencies: `pip install -r requirements.txt`
 4. Run the script with administrator privileges: `python main.py`
 
-## About Executing while Game is in background
+### About Executing while Game is in background
 
 1. **Game and System Constraints:**
     * Due to inherent limitations within the Genshin Impact and the Windows operating system, background execution is
@@ -53,6 +53,16 @@
     * When tasks require in-game character movement or turning, your mouse and keyboard will be temporarily locked. This
       is necessary when Genshin Impact is at the background, if you play Genshin Impact in the foreground, locking won't
       happen.
+
+### Command Line Arguments
+
+```
+ok-ww.exe -t 1 -e
+```
+
+- `-t` or `--task` represents the task number to execute automatically upon startup. `1` means the first task, a
+  one-click execution task.
+- `-e` or `--exit` when added, indicates that the program should automatically exit after the task is completed.
 
 ## Important Game Settings
 
