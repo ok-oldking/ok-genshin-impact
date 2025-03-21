@@ -99,12 +99,6 @@ class StartController(QObject):
                                 return self.tr(f'Auto HDR is enabled, please turn it off first.')
                             else:
                                 alert_error(self.tr('Auto HDR is enabled, tasks might not work correctly!'), True)
-                    # from ok.display.display import is_hdr_enabled
-                    # if is_hdr_enabled():
-                    #     if self.config.get('windows', {}).get('force_no_hdr', False):
-                    #         return self.tr(f'Windows HDR is enabled, please turn it off first.')
-                    #     else:
-                    #         alert_error(self.tr('Windows HDR is enabled, tasks might not work correctly!'), True)
                 if self.config.get('windows', {}).get('check_night_light', False):
                     logger.info(f'start checking for night light')
                     from ok.display.display import is_night_light_enabled

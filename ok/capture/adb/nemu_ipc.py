@@ -5,6 +5,7 @@ import sys
 import time
 from functools import wraps
 
+print('nemu_ipc init')
 import cv2
 import numpy as np
 
