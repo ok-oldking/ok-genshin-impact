@@ -21,13 +21,13 @@ class AutoCombatTask(TriggerTask, BaseCombatTask):
         self.last_box_name = None
         self.last_pick_time = 0
 
-    def trigger(self):
+    def run(self):
         if self.in_world_or_domain():
             self._in_combat = self.check_health_bar()
             if self._in_combat:
                 self.auto_combat(end_check=self.end_combat_check)
+            return True
 
-        # self.log_info(f'check_health_bar {check_health_bar}')
 
     def end_combat_check(self):
         health_bar = self.check_health_bar()

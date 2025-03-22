@@ -19,5 +19,5 @@ class AutoLoginTask(TriggerTask, BaseGiTask):
         self.icon = FluentIcon.BACK_TO_WINDOW
         self.trigger_interval = 2
 
-    def trigger(self):
+    def run(self):
         return self.login()

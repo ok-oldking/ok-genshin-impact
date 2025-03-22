@@ -20,7 +20,7 @@ class AutoPickTask(TriggerTask, BaseGiTask):
         self.last_box_name = None
         self.last_pick_time = 0
 
-    def trigger(self):
+    def run(self):
         # self.logger.debug("trigger task2")
         wait_start = 0
         if self.in_world_or_domain():
@@ -50,7 +50,7 @@ class AutoPickTask(TriggerTask, BaseGiTask):
 
                 dialogs = self.find_black_list_dialogs(icon_zone)
                 if dialogs:
-                    return
+                    return True
                 white_list = self.find_one(pick_white_list, box=icon_zone)
                 if white_list:
                     if white_list.name == 'pick_w_m_glass' and white_list.name == self.last_box_name and time.time() - self.last_pick_time < 60.0:

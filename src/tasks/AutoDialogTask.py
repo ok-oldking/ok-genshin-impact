@@ -26,8 +26,7 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
     def in_dialog(self):
         return self.find_one('top_left_chat_hide', horizontal_variance=0.06)
 
-
-    def trigger(self):
+    def run(self):
         entered = self.in_dialog()
         start_time = time.time()
         last_in_dialog_time = start_time
@@ -44,7 +43,7 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
                     if not found_near:
                         if time.time() - start_time > 10:
                             self.log_info(f'Auto Quest Dialog Need to Choose Manually!', notify=not self.hwnd.visible)
-                            return
+                            return True
                     else:
                         if self.debug:
                             self.screenshot('dialog')
@@ -55,7 +54,7 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
             elif self.in_world_or_domain():
                 self.log_info(f'Auto Quest Dialog Completed!', notify=not self.hwnd.visible and self.config.get("Send Notification when Dialog Completed"))
                 # self.executor.interaction.deactivate()
-                return
+                return True
             elif self.find_one('dialog_black_screen'):
                 last_in_dialog_time = time.time()
                 self.send_key('space')
@@ -66,9 +65,6 @@ class AutoDialogTask(TriggerTask, BaseGiTask):
             elif time.time() - last_in_dialog_time > 15:
                 self.log_info(f'Auto Quest Dialog Need to Choose Manually!',
                               notify=not self.hwnd.visible)
-                return
+                return True
             self.sleep(2)
-
-
-
-
+        return entered
