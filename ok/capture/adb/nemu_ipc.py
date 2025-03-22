@@ -5,13 +5,11 @@ import sys
 import time
 from functools import wraps
 
-print('nemu_ipc init')
 import cv2
 import numpy as np
 
 from ok import Logger
 from ok.capture.adb.nemu_utils import retry_sleep, RETRY_TRIES
-from ok.capture.adb.pool import WORKER_POOL
 
 logger = Logger.get_logger(__name__)
 
@@ -22,133 +20,6 @@ class NemuIpcIncompatible(Exception):
 
 class NemuIpcError(Exception):
     pass
-
-
-class CaptureStd:
-    """
-    Capture stdout and stderr from both python and C library
-    https://stackoverflow.com/questions/5081657/how-do-i-prevent-a-c-shared-library-to-print-on-stdout-in-python/17954769
-
-    ```
-    with CaptureStd() as capture:
-        # String wasn't printed
-        print('whatever')
-    # But captured in ``capture.stdout``
-    print(f'Got stdout: "{capture.stdout}"')
-    print(f'Got stderr: "{capture.stderr}"')
-    ```
-    """
-
-    def __init__(self):
-        self.stdout = b''
-        self.stderr = b''
-
-    def _redirect_stdout(self, to):
-        sys.stdout.close()
-        os.dup2(to, self.fdout)
-        sys.stdout = os.fdopen(self.fdout, 'w')
-
-    def _redirect_stderr(self, to):
-        sys.stderr.close()
-        os.dup2(to, self.fderr)
-        sys.stderr = os.fdopen(self.fderr, 'w')
-
-    def __enter__(self):
-        self.fdout = sys.stdout.fileno()
-        self.fderr = sys.stderr.fileno()
-        self.reader_out, self.writer_out = os.pipe()
-        self.reader_err, self.writer_err = os.pipe()
-        self.old_stdout = os.dup(self.fdout)
-        self.old_stderr = os.dup(self.fderr)
-
-        file_out = os.fdopen(self.writer_out, 'w')
-        file_err = os.fdopen(self.writer_err, 'w')
-        self._redirect_stdout(to=file_out.fileno())
-        self._redirect_stderr(to=file_err.fileno())
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._redirect_stdout(to=self.old_stdout)
-        self._redirect_stderr(to=self.old_stderr)
-        os.close(self.old_stdout)
-        os.close(self.old_stderr)
-
-        self.stdout = self.recvall(self.reader_out)
-        self.stderr = self.recvall(self.reader_err)
-        os.close(self.reader_out)
-        os.close(self.reader_err)
-
-    @staticmethod
-    def recvall(reader, length=1024) -> bytes:
-        fragments = []
-        while 1:
-            chunk = os.read(reader, length)
-            if chunk:
-                fragments.append(chunk)
-            else:
-                break
-        output = b''.join(fragments)
-        return output
-
-
-class CaptureNemuIpc(CaptureStd):
-    instance = None
-
-    def is_capturing(self):
-        """
-        Only capture at the topmost wrapper to avoid nested capturing
-        If a capture is ongoing, this instance does nothing
-        """
-        cls = self.__class__
-        return isinstance(cls.instance, cls) and cls.instance != self
-
-    def __enter__(self):
-        if self.is_capturing():
-            return self
-
-        super().__enter__()
-        CaptureNemuIpc.instance = self
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.is_capturing():
-            return
-
-        CaptureNemuIpc.instance = None
-        super().__exit__(exc_type, exc_val, exc_tb)
-
-        self.check_stdout()
-        self.check_stderr()
-
-    def check_stdout(self):
-        if not self.stdout:
-            return
-        logger.info(f'NemuIpc stdout: {self.stdout}')
-
-    def check_stderr(self):
-        if not self.stderr:
-            return
-        logger.error(f'NemuIpc stderr: {self.stderr}')
-
-        # Calling an old MuMu12 player
-        # Tested on 3.4.0
-        # b'nemu_capture_display rpc error: 1783\r\n'
-        # Tested on 3.7.3
-        # b'nemu_capture_display rpc error: 1745\r\n'
-        if b'error: 1783' in self.stderr or b'error: 1745' in self.stderr:
-            raise NemuIpcIncompatible(
-                f'NemuIpc requires MuMu12 version >= 3.8.13, please check your version')
-        # contact_id incorrect
-        # b'nemu_capture_display cannot find rpc connection\r\n'
-        if b'cannot find rpc connection' in self.stderr:
-            raise NemuIpcError(self.stderr)
-        # Emulator died
-        # b'nemu_capture_display rpc error: 1722\r\n'
-        # MuMuVMMSVC.exe died
-        # b'nemu_capture_display rpc error: 1726\r\n'
-        # No idea how to handle yet
-        if b'error: 1722' in self.stderr or b'error: 1726' in self.stderr:
-            raise NemuIpcError('Emulator instance is probably dead')
 
 
 def retry(func):
@@ -286,12 +157,13 @@ class NemuIpcImpl:
             NemuIpcIncompatible:
             NemuIpcError
         """
-        if on_thread:
-            # nemu_ipc may timeout sometimes, so we run it on a separated thread
-            job = WORKER_POOL.start_thread_soon(func, *args)
-            result = job.get_or_kill(timeout)
-        else:
-            result = func(*args)
+        # if on_thread:
+        #     # nemu_ipc may timeout sometimes, so we run it on a separated thread
+        #     job = WORKER_POOL.start_thread_soon(func, *args)
+        #     result = job.get_or_kill(timeout)
+        # else:
+
+        result = func(*args)
 
         err = False
         if func.__name__ == '_screenshot':
@@ -305,8 +177,6 @@ class NemuIpcImpl:
         # Get to actual error message printed in std
         if err:
             logger.warning(f'Failed to call {func.__name__}, result={result}')
-            with CaptureNemuIpc():
-                func(*args)
 
         return result
 
