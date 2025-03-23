@@ -71,7 +71,7 @@ config = {
     },
     'ocr': {
         'lib': 'rapidocr',
-        'target_height': 540,
+        'target_height': 720,
     },
     'windows': {  # required  when supporting windows game
         'exe': ['GenshinImpact.exe', 'YuanShen.exe'],
