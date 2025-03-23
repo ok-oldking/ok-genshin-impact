@@ -533,8 +533,8 @@ class BaseGiTask(BaseTask):
         if not self._turn_per_angle:
             width, height = get_hwnd_screen_resolution(self.hwnd.hwnd)
             self._turn_per_angle = 20.8 * width / 3840
-            self.log_info(f'get_hwnd_screen_resolution {width, height} turn_per_angle: {turn_per_angle}')
-        return turn_per_angle
+            self.log_info(f'get_hwnd_screen_resolution {width, height} turn_per_angle: {self._turn_per_angle}')
+        return self._turn_per_angle
 
     def get_angle(self):
         arrow_template = self.get_feature_by_name('domain_map_arrow_east')
