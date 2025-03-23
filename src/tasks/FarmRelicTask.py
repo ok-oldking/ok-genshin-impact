@@ -81,15 +81,7 @@ class FarmRelicTask(BaseCombatTask):
         self.wait_feature('btn_ok', box='bottom', time_out=20, raise_if_not_found=True,
                           settle_time=1, threshold=0.9)
         self.sleep(3)
-        lefts = self.ocr(box='box_resin_left', match=number_re)
-        if not lefts:
-            raise Exception('Can not find resin left!')
-        if len(lefts) == 1:
-            double_resin = 0
-            resin = int(lefts[0].name)
-        elif len(lefts) == 2:
-            double_resin = int(lefts[0].name)
-            resin = int(lefts[-1].name)
+        double_resin, resin = self.find_resin_left()
         self.info_set('Resin', resin)
         self.info_incr('Double Resin', double_resin)
         can_continue = double_resin > 0 or (self.config.get('Use Original Resin') and resin >= 20)
@@ -99,6 +91,20 @@ class FarmRelicTask(BaseCombatTask):
         else:
             self.confirm_dialog(btn='dungeon_exit')
         return can_continue
+
+    def find_resin_left(self):
+        lefts = self.ocr(box='box_resin_left', match=number_re, log=True)
+        if not lefts:
+            raise Exception('Can not find resin left!')
+        if len(lefts) == 1:
+            double_resin = 0
+            resin = int(lefts[0].name)
+        elif len(lefts) == 2:
+            double_resin = int(lefts[0].name)
+            resin = int(lefts[-1].name)
+        else:
+            raise Exception('Resin left box too many!')
+        return double_resin, resin
 
     def turn_and_walk_to_tree(self):
         self.executor.interaction.operate(self.do_turn_and_walk_to_tree, block=True)
