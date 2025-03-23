@@ -5,6 +5,8 @@ from typing import List
 
 import cv2
 import numpy as np
+import win32api
+import win32con
 
 from ok import BaseTask, Box, calculate_color_percentage, og, Feature
 from ok import Logger
@@ -15,6 +17,7 @@ class BaseGiTask(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._turn_per_angle = 0
 
     @property
     def find_f_box(self):
@@ -396,6 +399,9 @@ class BaseGiTask(BaseTask):
     def open_book(self):
         self.send_key('f1', after_sleep=2)
 
+    def send_key(self, key, after_sleep):
+        super().send_key(key, after_sleep=after_sleep, down_time=0.04)
+
     def go_to_relic(self):
         self.ensure_main()
         self.open_book()
@@ -513,7 +519,7 @@ class BaseGiTask(BaseTask):
             self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5),
                                                       down_time=0.02)
             self.sleep(0.5)
-        turn_per_angle = 20.8
+        turn_per_angle = self.get_turn_per_angle()
         self.executor.interaction.do_move_mouse_relative(round(turn_per_angle * angle), 0)
         if middle_click:
             self.sleep(0.1)
@@ -522,6 +528,13 @@ class BaseGiTask(BaseTask):
             self.do_send_key_up('w')
             self.sleep(0.6)
         self.info_set(f'turn_angle_after', self.get_angle()[0])
+
+    def get_turn_per_angle(self):
+        if not self._turn_per_angle:
+            width, height = get_hwnd_screen_resolution(self.hwnd.hwnd)
+            self._turn_per_angle = 20.8 * width / 3840
+            self.log_info(f'get_hwnd_screen_resolution {width, height} turn_per_angle: {turn_per_angle}')
+        return turn_per_angle
 
     def get_angle(self):
         arrow_template = self.get_feature_by_name('domain_map_arrow_east')
@@ -654,6 +667,20 @@ class BaseGiTask(BaseTask):
             self.log_info(f'trees: {target} {self.width / 2 - target.center()[0]}')
         else:
             self.log_info('no trees')
+
+
+def get_hwnd_screen_resolution(hwnd):
+    # Get the monitor where the hwnd is located
+    monitor = win32api.MonitorFromWindow(hwnd, win32con.MONITOR_DEFAULTTONEAREST)
+
+    # Get monitor info
+    monitor_info = win32api.GetMonitorInfo(monitor)
+    monitor_area = monitor_info['Monitor']  # Monitor dimensions
+
+    width = monitor_area[2] - monitor_area[0]
+    height = monitor_area[3] - monitor_area[1]
+
+    return width, height
 
 
 stamina_re = re.compile(r"^\d+/\d+$")
