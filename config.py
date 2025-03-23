@@ -70,7 +70,7 @@ config = {
         'default_threshold': 0.8,
     },
     'ocr': {
-        'lib': 'rapidocr_openvino',
+        'lib': 'rapidocr',
         'target_height': 540,
     },
     'windows': {  # required  when supporting windows game
