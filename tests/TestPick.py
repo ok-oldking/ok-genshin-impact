@@ -14,9 +14,9 @@ class TestPick(TaskTestCase):
     def test_base(self):
         # Create a BattleReport object
         self.set_image('tests/images/pick.png')
-        triggered = self.task.trigger()
+        triggered = self.task.run()
         print(f'TestPick triggered {triggered}')
-        self.assertIsNone(triggered)
+        self.assertTrue(triggered)
 
 
 if __name__ == '__main__':
