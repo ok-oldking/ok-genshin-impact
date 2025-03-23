@@ -1,5 +1,11 @@
+import platform
+
 import cv2
 from rapidocr import RapidOCR
+
+cur_window_version_str = platform.release().split(".")[0]
+cur_window_version = int(cur_window_version_str) if cur_window_version_str.isdigit() else 0
+print(f'xxxxx cur_window_version_str="{cur_window_version_str}"')
 
 engine = RapidOCR(params={"Global.lang_det": "ch_mobile", "Global.lang_rec": "ch_mobile", "Global.use_cls": False,
                           "EngineConfig.onnxruntime.use_dml": True})
