@@ -27,6 +27,7 @@ class StartController(QObject):
     def do_start(self, task=None, exit_after=False):
         communicate.starting_emulator.emit(False, None, self.start_timeout)
         try:
+            logger.info(f'do_start: call do_refresh')
             og.device_manager.do_refresh(True)
         except Exception as e:
             communicate.starting_emulator.emit(True, self.tr(str(e)), 0)

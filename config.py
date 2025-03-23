@@ -6,7 +6,7 @@ import numpy as np
 
 from ok import ConfigOption
 
-version = "v0.2.38"
+version = "v0.2.44"
 
 def make_bottom_right_black(frame):
     """
@@ -70,8 +70,8 @@ config = {
         'default_threshold': 0.8,
     },
     'ocr': {
-        'lib': 'rapidocr_openvino',
-        'target_height': 540,
+        'lib': 'rapidocr',
+        'target_height': 720,
     },
     'windows': {  # required  when supporting windows game
         'exe': ['GenshinImpact.exe', 'YuanShen.exe'],
