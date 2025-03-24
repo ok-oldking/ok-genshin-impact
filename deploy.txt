@@ -11,4 +11,3 @@ README.md
 README_EN.md
 readmes
 i18n
-rapidocr
