@@ -65,8 +65,8 @@ class BaseGiTask(BaseTask):
         return self.find_one('top_left_dungeon')
 
     def click(self, x: int | Box | List[Box] = -1, y=-1, move_back=False, name=None, interval=-1, move=True,
-              down_time=0.01, after_sleep=0):
-        super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.03, after_sleep=after_sleep)
+              down_time=0.01, after_sleep=0, key="left"):
+        super().click(x, y, move_back=move_back, name=name, move=move, down_time=0.03, after_sleep=after_sleep, key=key)
 
     def calculate_angle_between(self, box1: Box, box2: Box):
         center1_x, center1_y = box1.center()
@@ -249,10 +249,12 @@ class BaseGiTask(BaseTask):
         pick_daily_reward = self.find_one(feature, box=self.find_choices_box)
         if not pick_daily_reward:
             raise RuntimeError("No daily reward found")
-        text_zone = pick_daily_reward.copy(x_offset=pick_daily_reward.width * 3,
+        text_zone = pick_daily_reward.copy(x_offset=pick_daily_reward.width * 1.2,
                                            width_offset=pick_daily_reward.width * 1.2)
         yellow_percent = self.calculate_color_percentage(pick_up_text_yellow_color, text_zone)
-        self.log_debug(f"{feature} yellow_percent={yellow_percent}"'')
+        if self.debug:
+            self.screenshot('yellow_percent')
+            self.log_debug(f"{feature} yellow_percent={yellow_percent}"'')
         if yellow_percent > 0.05:
             return pick_daily_reward
 
@@ -557,8 +559,8 @@ class BaseGiTask(BaseTask):
 
             target = self.find_one(f'arrow_{angle}', box=target_box,
                                    template=arrow_template, threshold=0.3)
-            if self.debug and angle % 90 == 0:
-                self.screenshot(f'arrow_rotated_{angle}', arrow_template.mat)
+            # if self.debug and angle % 90 == 0:
+            #     self.screenshot(f'arrow_rotated_{angle}', arrow_template.mat)
             if target and target.confidence > max_conf:
                 max_conf = target.confidence
                 max_angle = angle
