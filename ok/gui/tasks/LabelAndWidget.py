@@ -20,7 +20,6 @@ class LabelAndWidget(QWidget):
         if content:
             self.contentLabel = QLabel(og.app.tr(content))
             self.contentLabel.setObjectName('contentLabel')
-            # self.contentLabel.setWordWrap(True)
             self.title_layout.addWidget(self.contentLabel)
         self.layout.addStretch()
 
