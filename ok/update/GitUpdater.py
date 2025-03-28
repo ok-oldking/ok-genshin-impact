@@ -215,8 +215,11 @@ class GitUpdater:
             return False
 
     def version_selection_changed(self, new_version):
-        self.handler.post(lambda: self.do_version_selection_changed(new_version), remove_existing=True,
-                          skip_if_running=False)
+        is_newer = is_newer_or_eq_version(new_version, self.starting_version)
+        logger.info(f'version_selection_changed {new_version} {self.starting_version} {is_newer}')
+        if is_newer > 0:
+            self.handler.post(lambda: self.do_version_selection_changed(new_version), remove_existing=True,
+                              skip_if_running=False)
 
     def do_version_selection_changed(self, new_version):
         date = None

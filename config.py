@@ -6,7 +6,7 @@ import numpy as np
 
 from ok import ConfigOption
 
-version = "v0.2.46"
+version = "v0.2.47"
 
 def make_bottom_right_black(frame):
     """
@@ -79,7 +79,7 @@ config = {
         # 'hwnd_class': 'UnrealWindow',
         'interaction': 'Genshin',
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
-        # 'bit_blt_render_full': True,
+        'bit_blt_render_full': True,
         'check_hdr': True,
         'force_no_hdr': False,
         # 'check_night_light': True,
@@ -130,14 +130,14 @@ config = {
         'pip_url': 'https://pypi.org/simple/'
         },
         {
+            'name': 'China',
+            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
+            'pip_url': 'https://mirrors.cloud.tencent.com/pypi/simple'
+        },
+        {
             'name': '阿里云',
             'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
             'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
-        },
-        {
-            'name': '清华大学',
-            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
-            'pip_url': 'https://pypi.tuna.tsinghua.edu.cn/simple'
         },
         {
             'name': '腾讯云',
@@ -156,6 +156,7 @@ config = {
         ["src.tasks.FarmRelicTask", "FarmRelicTask"],
         ["src.tasks.ClaimDailyRewardTask", "ClaimDailyRewardTask"],
         ["src.tasks.CraftResinTask", "CraftResinTask"],
+        ["ok", "DiagnosisTask"],
     ],
     'trigger_tasks': [  # tasks to execute
         ["src.tasks.AutoPickTask", "AutoPickTask"],

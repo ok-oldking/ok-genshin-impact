@@ -98,6 +98,7 @@ class UpdateBar(QWidget):
             self.updater.update_source(self.update_sources.currentIndex())
 
     def version_selection_changed(self, text):
+        self.version_log_label.setText("")
         self.update_update_btns(text)
         self.updater.version_selection_changed(text)
 
