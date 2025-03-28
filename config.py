@@ -79,7 +79,7 @@ config = {
         # 'hwnd_class': 'UnrealWindow',
         'interaction': 'Genshin',
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
-        # 'bit_blt_render_full': True,
+        'bit_blt_render_full': True,
         'check_hdr': True,
         'force_no_hdr': False,
         # 'check_night_light': True,
