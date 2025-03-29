@@ -35,7 +35,8 @@ class BaseCombatTask(BaseGiTask):
             max_height = min_height * 3
             min_width = self.width_of_screen(100 / 3840)
 
-        boxes = find_color_rectangles(self.frame, enemy_health_bar_red_color, min_width, min_height,
+        boxes = find_color_rectangles(self.box_of_screen(0.1, 0.1, 0.9, 0.9).crop_frame(self.frame),
+                                      enemy_health_bar_red_color, min_width, min_height,
                                       max_height=max_height)
 
         if len(boxes) > 0:
