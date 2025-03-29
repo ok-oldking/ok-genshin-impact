@@ -81,7 +81,7 @@ config = {
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
         'bit_blt_render_full': True,
         'check_hdr': True,
-        'force_no_hdr': False,
+        'force_no_hdr': True,
         # 'check_night_light': True,
         'force_no_night_light': False,
         'require_bg': True
@@ -123,6 +123,7 @@ config = {
     'supported_resolution': {
         'ratio': '16:9',
         'min_size': (1280, 720),
+        'force_ratio': True,
     },
     'git_update': {'sources': [{
         'name': 'Global',
@@ -132,7 +133,7 @@ config = {
         {
             'name': 'China',
             'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
-            'pip_url': 'https://mirrors.cloud.tencent.com/pypi/simple'
+            'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
         },
         {
             'name': '阿里云',
