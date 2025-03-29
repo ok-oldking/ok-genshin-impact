@@ -18,6 +18,25 @@ class DailyTask(FarmRelicTask):
         self.add_first_run_alert(
             "If this task is executed while the game is in the background, your mouse will be locked temperately while the game character is moving due to game and system limitations.")
 
+    def teleport_and_catch_butterfly(self):
+        self.send_key('m', after_sleep=1)
+        teleport = self.find_one('map_option_waypoint', box=self.box_of_screen(0.04, 0.41, 0.17, 0.60))
+        self.click_box(teleport, after_sleep=1)
+        self.wait_confirm_dialog(btn='btn_teleport', box='bottom_right')
+        self.wait_world(settle_time=1)
+        self.turn_angle(140, middle_click=False)
+        self.catch_butter_fly(time_out=1.4, catch_time=0.8)
+
+        # sea butterfly
+        self.send_key('m', after_sleep=1)
+        self.click_relative(0.02, 0.59, after_sleep=1)
+
+        teleport = self.find_one('map_option_waypoint', box=self.box_of_screen(0.72, 0.07, 0.93, 0.26))
+        self.click_box(teleport, after_sleep=1)
+        self.wait_confirm_dialog(btn='btn_teleport', box='bottom_right')
+        self.wait_world(settle_time=1)
+        self.turn_angle(92, 190, False)
+        self.catch_butter_fly(6, 1)
 
     def run(self):
         self.info_set('current task', 'wait login')
@@ -40,6 +59,9 @@ class DailyTask(FarmRelicTask):
 
         self.claim_mail()
         self.claim_battle_pass()
+
+        self.teleport_and_catch_butterfly()
+
         self.log_info(f'Daily Task Completed!', notify=True)
         return
 

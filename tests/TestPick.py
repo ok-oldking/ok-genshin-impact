@@ -18,6 +18,20 @@ class TestPick(TaskTestCase):
         print(f'TestPick triggered {triggered}')
         self.assertTrue(triggered)
 
+    def test_yellow1(self):
+        # Create a BattleReport object
+        self.set_image('tests/images/yellow_percent.png')
+        yellow = self.task.find_pick_up_with_yellow_text('pick_daily_expedition')
+        print(f'yellow {yellow}')
+        self.assertIsNotNone(yellow)
+
+    def test_yellow2(self):
+        # Create a BattleReport object
+        self.set_image('tests/images/yellow_percent.png')
+        yellow = self.task.find_pick_up_with_yellow_text('pick_daily_reward')
+        print(f'yellow {yellow}')
+        self.assertIsNotNone(yellow)
+
 
 if __name__ == '__main__':
     unittest.main()

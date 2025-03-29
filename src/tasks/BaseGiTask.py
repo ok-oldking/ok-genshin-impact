@@ -104,18 +104,18 @@ class BaseGiTask(BaseTask):
         return to_turn
 
     def do_walk_to_f(self, time_out=5, run=True, min_time=0, direction_fun=None, mini_map_target=None):
+        self.log_info('do_walk_to_f start')
         self.do_send_key_down('w')
         if run:
             self.sleep(0.1)
             self.executor.interaction.do_mouse_down(key='right')
-        # if min_time:
-        #     self.sleep(min_time)
         start = time.time()
         found = False
         current_direction = None
         last_turn = 0
         while time.time() - start < time_out:
-            if self.find_f() and (not mini_map_target or not self.mini_map_find(mini_map_target, threshold=0.85)):
+            if time.time() - start >= min_time and self.find_f() and (
+                    not mini_map_target or not self.mini_map_find(mini_map_target, threshold=0.85)):
                 self.log_info(f'found f while walking cost:{time.time() - start}')
                 self.executor.interaction.do_send_key('f')
                 if run:
@@ -321,7 +321,7 @@ class BaseGiTask(BaseTask):
 
     def do_go_to_catherine(self):
         self.do_turn_to_mini_map('mini_map_catherine')
-        self.do_walk_to_f(time_out=3, mini_map_target='mini_map_catherine')
+        self.do_walk_to_f(min_time=1.5, time_out=3, mini_map_target='mini_map_catherine')
 
     def find_tree(self, threshold=0.5) -> Box:
         """
@@ -454,8 +454,8 @@ class BaseGiTask(BaseTask):
         self.wait_confirm_dialog()
         return True
 
-    def wait_world(self, time_out=60):
-        self.wait_until(self.in_world, time_out=time_out, settle_time=1, raise_if_not_found=True)
+    def wait_world(self, time_out=60, settle_time=1):
+        self.wait_until(self.in_world, time_out=time_out, settle_time=settle_time, raise_if_not_found=True)
 
     def measure_scroll(self):
         last_box = self.box_of_screen(0.39, 0.66, 0.50, 0.72)
@@ -491,8 +491,8 @@ class BaseGiTask(BaseTask):
         self.click(btn_ok)
         return btn_ok
 
-    def wait_confirm_dialog(self, btn='btn_ok', time_out=10):
-        btn_ok = self.wait_feature(btn, box='bottom', raise_if_not_found=True, time_out=time_out, settle_time=1,
+    def wait_confirm_dialog(self, btn='btn_ok', time_out=10, box='bottom'):
+        btn_ok = self.wait_feature(btn, box=box, raise_if_not_found=True, time_out=time_out, settle_time=1,
                                    threshold=0.9)
         self.click(btn_ok, after_sleep=1)
 
@@ -501,6 +501,9 @@ class BaseGiTask(BaseTask):
         self.info_set('East Angle:', angle)
         if angle is not None:
             self.executor.interaction.operate(lambda: self.do_turn_angle(angle * -1), block=True)
+
+    def turn_angle(self, angle, vertical_angle=0, middle_click=True):
+        self.executor.interaction.operate(lambda: self.do_turn_angle(angle, vertical_angle, middle_click), block=True)
 
     def turn_east_and_move_to(self, fun):
         angle, _ = self.get_angle()
@@ -516,13 +519,37 @@ class BaseGiTask(BaseTask):
         self.do_turn_angle(angle)
         return self.do_walk_to_f(direction_fun=fun, time_out=12)
 
-    def do_turn_angle(self, angle, middle_click=True):
+    def catch_butter_fly(self, time_out=10, catch_time=1):
+        self.executor.interaction.operate(lambda: self.do_catch_butter_fly(time_out, catch_time=catch_time), block=True)
+
+    def do_catch_butter_fly(self, time_out=10, catch_time=1):
+        self.do_send_key_down('w')
+        self.sleep(0.1)
+        self.executor.interaction.do_mouse_down(key='right')
+        start = time.time()
+        start_catch = False
+        while time.time() - start < time_out:
+            if not start_catch and self.find_f():
+                time_out = min(time.time() - start + catch_time, time_out)
+                start_catch = True
+                self.log_info(f'start catch butter fly: {time_out}')
+            if start_catch:
+                if self.check_interval(0.2):
+                    self.executor.interaction.do_send_key('f')
+            self.next_frame()
+        self.executor.interaction.do_mouse_up(key='right')
+        self.do_send_key_up('w')
+
+    def do_turn_angle(self, angle, vertical_angle=0, middle_click=True):
         if middle_click:
             self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5),
                                                       down_time=0.02)
             self.sleep(0.5)
         turn_per_angle = self.get_turn_per_angle()
-        self.executor.interaction.do_move_mouse_relative(round(turn_per_angle * angle), 0)
+        x_move = round(turn_per_angle * angle)
+        y_move = round(turn_per_angle * vertical_angle)
+        self.info_set('Turn Angle', f'h:{angle} v:{vertical_angle}')
+        self.executor.interaction.do_move_mouse_relative(x_move, y_move)
         if middle_click:
             self.sleep(0.1)
             self.do_send_key_down('w')
@@ -702,8 +729,8 @@ pick_up_text_green_color = {
 
 pick_up_text_yellow_color = {
     'r': (245, 255),  # Red range
-    'g': (194, 214),  # Green range
-    'b': (40, 60)  # Blue range
+    'g': (194, 235),  # Green range
+    'b': (15, 60)  # Blue range
 }
 
 pick_up_text_blue_color = {
