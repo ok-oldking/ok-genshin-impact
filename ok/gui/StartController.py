@@ -64,6 +64,7 @@ class StartController(QObject):
             if error:
                 communicate.starting_emulator.emit(True, error, 0)
                 return
+
         if isinstance(task, int):
             task = og.executor.onetime_tasks[task]
             logger.info(f"enable task {task}")
@@ -73,8 +74,37 @@ class StartController(QObject):
         if task:
             task.enable()
             task.unpause()
+
         og.executor.start()
         communicate.starting_emulator.emit(True, None, 0)
+
+    def check_resolution(self):
+        error = None
+        supported_resolution = self.config.get(
+            'supported_resolution', {})
+        supported_ratio = supported_resolution.get('ratio')
+        min_size = supported_resolution.get('min_size')
+        resize_to = supported_resolution.get('resize_to')
+        force_ratio = supported_resolution.get('force_ratio')
+        supported, resolution = og.executor.check_frame_and_resolution(supported_ratio, min_size)
+        if not supported:
+            resize_success = False
+            if resize_to and isinstance(og.device_manager.capture_method, BaseWindowsCaptureMethod):
+                resize_success = og.device_manager.capture_method.hwnd_window.try_resize_to(resize_to)
+            if not resize_success:
+                error = self.tr(
+                    'Resolution {resolution} check failed, some tasks might not work correctly!').format(
+                    resolution=resolution)
+                if supported_ratio:
+                    error += self.tr(', the supported ratio is {supported_ratio}').format(
+                        supported_ratio=supported_ratio)
+                if min_size:
+                    error += self.tr(', the supported min resolution is {min_size}').format(
+                        min_size=f'{min_size[0]}x{min_size[1]}')
+        if force_ratio:
+            return error
+        elif error:
+            alert_error(error, tray=True)
 
     def check_device_error(self):
         try:
@@ -117,26 +147,11 @@ class StartController(QObject):
             if og.executor.feature_set is not None and not og.executor.feature_set.check_size(frame):
                 return self.tr(
                     'Image resource load failed, please try install again.(Don\'t put the app in Downloads folder)')
-            supported_resolution = self.config.get(
-                'supported_resolution', {})
-            supported_ratio = supported_resolution.get('ratio')
-            min_size = supported_resolution.get('min_size')
-            resize_to = supported_resolution.get('resize_to')
-            supported, resolution = og.executor.check_frame_and_resolution(supported_ratio, min_size)
-            if not supported:
-                resize_success = False
-                if resize_to and isinstance(og.device_manager.capture_method, BaseWindowsCaptureMethod):
-                    resize_success = og.device_manager.capture_method.hwnd_window.try_resize_to(resize_to)
-                if not resize_success:
-                    error = self.tr(
-                        'Resolution {resolution} check failed, some tasks might not work correctly!').format(
-                        resolution=resolution)
-                    if supported_ratio:
-                        error += self.tr(', the supported ratio is {supported_ratio}').format(
-                            supported_ratio=supported_ratio)
-                    if min_size:
-                        error += self.tr(', the supported min resolution is {min_size}').format(
-                            min_size=f'{min_size[0]}x{min_size[1]}')
+
+            resolution_error = self.check_resolution()
+            if resolution_error:
+                return resolution_error
+
             if device and device['device'] == "windows" and not is_admin():
                 return self.tr(
                     f"PC version requires admin privileges, Please restart this app with admin privileges!")
