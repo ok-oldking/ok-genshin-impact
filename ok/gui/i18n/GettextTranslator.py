@@ -1,7 +1,7 @@
 import gettext
 import os
 
-from ok import ensure_dir_for_file, resource_path, get_path_relative_to_exe
+from ok import ensure_dir_for_file, get_path_relative_to_exe
 
 
 def __get_root():
@@ -69,3 +69,8 @@ def get_translations(language):
     gettext.textdomain('ok')
     dir_i18n = get_path_relative_to_exe('i18n')
     return gettext.translation('ok', dir_i18n, languages=[language])
+
+
+def get_ocr_translations(language):
+    dir_i18n = get_path_relative_to_exe('i18n')
+    return gettext.translation('ocr', dir_i18n, languages=[language])
