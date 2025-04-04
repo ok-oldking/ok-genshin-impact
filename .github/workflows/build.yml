@@ -119,6 +119,9 @@ jobs:
         run: |
           python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-genshin-impact --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
 
+      - name: push to cnb
+        run: |
+          python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-genshin-impact.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
 
       - name: push to coding
         run: |

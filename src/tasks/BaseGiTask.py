@@ -103,8 +103,51 @@ class BaseGiTask(BaseTask):
         self.log_info(f'angle: {my_angle}, angle_degrees: {angle_degrees}, to_turn: {to_turn}')
         return to_turn
 
+    def get_direction(self, direction_fun, current_direction, threshold=-1):
+        target = direction_fun()
+        if target:
+            distance = target.center()[0] - self.width / 2
+        else:
+            return None
+        if threshold < 0:
+            if current_direction:
+                threshold = 0.06
+            else:
+                threshold = 0.02
+        if abs(distance) <= self.width_of_screen(threshold):
+            new_direction = None
+        elif distance > 0:
+            new_direction = 'd'
+        else:
+            new_direction = 'a'
+
+        return new_direction
+
+    def do_walk_center(self, direction_fun, time_out=3):
+        if not direction_fun:
+            return
+        start = time.time()
+        current_direction = None
+        while time.time() - start < time_out:
+            new_direction = self.get_direction(direction_fun, current_direction, 0.08)
+            if not new_direction:
+                break
+            if new_direction != current_direction:
+                self.log_info(f'do_walk_center changed direction {new_direction}')
+                if current_direction:
+                    break
+                if new_direction:
+                    self.do_send_key_down(new_direction)
+                    self.sleep(0.01)
+                current_direction = new_direction
+        self.log_info(f'do_walk_center end {current_direction}')
+        if current_direction:
+            self.do_send_key_up(current_direction)
+            self.sleep(0.001)
+
     def do_walk_to_f(self, time_out=5, run=True, min_time=0, direction_fun=None, mini_map_target=None):
         self.log_info('do_walk_to_f start')
+        self.do_walk_center(direction_fun=direction_fun)
         self.do_send_key_down('w')
         if run:
             self.sleep(0.1)
@@ -128,22 +171,12 @@ class BaseGiTask(BaseTask):
                 if angle_to_turn:
                     self.do_turn_angle(angle_to_turn, middle_click=False)
             elif direction_fun:
-                target = direction_fun()
-                if target:
-                    distance = target.center()[0] - self.width / 2
-                else:
-                    distance = 0
-                if abs(distance) < self.width_of_screen(0.02):
-                    new_direction = None
-                elif distance > 0:
-                    new_direction = 'd'
-                else:
-                    new_direction = 'a'
+                new_direction = self.get_direction(direction_fun, current_direction)
                 if new_direction != current_direction:
                     self.log_info(f'changed direction {new_direction}')
                     if current_direction:
                         self.do_send_key_up(current_direction)
-                        self.sleep(0.1)
+                        self.sleep(0.001)
                     if new_direction:
                         self.do_send_key_down(new_direction)
                     current_direction = new_direction
@@ -158,6 +191,8 @@ class BaseGiTask(BaseTask):
             self.sleep(1)
         f_count = 0
         while self.find_f() and f_count < 3:
+            self.log_error(f'do_walk_to_f f failed, send f again')
+            self.screenshot('f_failed')
             self.executor.interaction.do_send_key('f')
             self.sleep(1)
             f_count += 1
@@ -323,7 +358,7 @@ class BaseGiTask(BaseTask):
         self.do_turn_to_mini_map('mini_map_catherine')
         self.do_walk_to_f(min_time=1.5, time_out=3, mini_map_target='mini_map_catherine')
 
-    def find_tree(self, threshold=0.5) -> Box:
+    def find_tree(self, threshold=0.3) -> Box:
         """
         Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
 
@@ -396,6 +431,7 @@ class BaseGiTask(BaseTask):
 
         ret = sorted(detections, key=lambda detection: detection.confidence, reverse=True)
         if ret:
+            self.draw_boxes('tree', ret)
             return ret[0]
 
     def open_book(self):
@@ -553,9 +589,9 @@ class BaseGiTask(BaseTask):
         if middle_click:
             self.sleep(0.1)
             self.do_send_key_down('w')
-            self.sleep(0.2)
+            self.sleep(0.1)
             self.do_send_key_up('w')
-            self.sleep(0.6)
+            self.sleep(0.2)
         self.info_set(f'turn_angle_after', self.get_angle()[0])
 
     def get_turn_per_angle(self):
@@ -576,8 +612,8 @@ class BaseGiTask(BaseTask):
         center = (w // 2, h // 2)
         target_box = self.get_box_by_name('domain_map_arrow_east')
         target_box = target_box.scale(1.4)
-        if self.debug:
-            self.screenshot('arrow_original', original_mat)
+        # if self.debug:
+        #     self.screenshot('arrow_original', original_mat)
         for angle in range(0, 360):
             # Rotate the template image
             rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)

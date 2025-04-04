@@ -47,10 +47,16 @@ class FarmRelicTask(BaseCombatTask):
                 raise RuntimeError('Can not find the Domain key!')
             self.auto_combat(end_check=self.domain_combat_end)
             if not self.turn_east_and_move_to(self.find_tree):
-                raise RuntimeError('Can get to the Domain Tree!')
+                self.log_error('Can get to the Domain Tree, please move manually, and then click continue!',
+                               notify=True)
+                self.pause()
+                self.move_to_tree()
             if not self.claim_domain():
                 break
         self.wait_world()
+
+    def move_to_tree(self):
+        self.turn_east_and_move_to(self.find_tree)
 
     def claim_domain(self):
         if self.find_one('dungeon_use_double'):
