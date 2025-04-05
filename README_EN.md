@@ -10,7 +10,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://www.microsoft.com/en-us/windows/)
 [![GitHub Release](https://img.shields.io/github/v/release/ok-oldking/ok-genshin-impact)](https://github.com/ok-oldking/ok-genshin-impact/releases)
 [![Downloads](https://img.shields.io/github/downloads/ok-oldking/ok-genshin-impact/total)](https://github.com/ok-oldking/ok-genshin-impact/releases)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Community-blue)](https://discord.gg/Q8utYcPQA3)
+[![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
 
 **ReadMe:** [English](README_EN.md) | [简体中文](README.md)
 

@@ -6,7 +6,7 @@ import numpy as np
 
 from ok import ConfigOption
 
-version = "v0.2.50"
+version = "v0.2.52"
 
 def make_bottom_right_black(frame):
     """
@@ -117,8 +117,8 @@ config = {
     'window_size': {
         'width': 1200,
         'height': 800,
-        'min_width': 600,
-        'min_height': 450,
+        'min_width': 800,
+        'min_height': 600,
     },
     'supported_resolution': {
         'ratio': '16:9',
@@ -132,19 +132,9 @@ config = {
         },
         {
             'name': 'China',
-            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
+            'git_url': 'https://cnb.cool/ok-oldking/ok-genshin-impact.git',
             'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
-        },
-        {
-            'name': '阿里云',
-            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
-            'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
-        },
-        {
-            'name': '腾讯云',
-            'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-gi.git',
-            'pip_url': 'https://mirrors.cloud.tencent.com/pypi/simple'
-        },
+        }
     ]},
     'screenshots_folder': "screenshots",
     'gui_title': 'OK-GI',  # Optional

@@ -10,7 +10,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://www.microsoft.com/en-us/windows/)
 [![GitHub Release](https://img.shields.io/github/v/release/ok-oldking/ok-genshin-impact)](https://github.com/ok-oldking/ok-genshin-impact/releases)
 [![Downloads](https://img.shields.io/github/downloads/ok-oldking/ok-genshin-impact/total)](https://github.com/ok-oldking/ok-genshin-impact/releases)
-[![Discord](https://img.shields.io/badge/Discord-加入社区-blue)](https://discord.gg/Q8utYcPQA3)
+[![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
 [![QQ频道](https://img.shields.io/badge/QQ频道-加入频道-blue)](https://pd.qq.com/s/e2wvbypn7)
 
 演示和教程 [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/9iURRmXQHew)
