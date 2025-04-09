@@ -8,7 +8,7 @@ import numpy as np
 import win32api
 import win32con
 
-from ok import BaseTask, Box, calculate_color_percentage, og, Feature
+from ok import BaseTask, Box, calculate_color_percentage, og, Feature, create_non_black_mask
 from ok import Logger
 
 logger = Logger.get_logger(__name__)
@@ -95,12 +95,19 @@ class BaseGiTask(BaseTask):
             self.log_info(f'Can not find myself on minimap')
             return 0
         angle_degrees = self.calculate_angle_between(my_box, target)
-        to_turn = angle_degrees + my_angle * -1
+        to_turn = self.get_angle_between(my_angle, angle_degrees)
+        self.log_info(f'angle: {my_angle}, angle_degrees: {angle_degrees}, to_turn: {to_turn}')
+        return to_turn
+
+    def get_angle_between(self, my_angle, angle):
+        if my_angle > angle:
+            to_turn = angle - my_angle
+        else:
+            to_turn = -(my_angle - angle)
         if to_turn > 180:
             to_turn -= 360
         elif to_turn < -180:
             to_turn += 360
-        self.log_info(f'angle: {my_angle}, angle_degrees: {angle_degrees}, to_turn: {to_turn}')
         return to_turn
 
     def get_direction(self, direction_fun, current_direction, threshold=-1):
@@ -147,7 +154,7 @@ class BaseGiTask(BaseTask):
 
     def do_walk_to_f(self, time_out=5, run=True, min_time=0, direction_fun=None, mini_map_target=None):
         self.log_info('do_walk_to_f start')
-        self.do_walk_center(direction_fun=direction_fun)
+        # self.do_walk_center(direction_fun=direction_fun)
         self.do_send_key_down('w')
         if run:
             self.sleep(0.1)
@@ -535,24 +542,26 @@ class BaseGiTask(BaseTask):
     def turn_east(self):
         angle, _ = self.get_angle()
         self.info_set('East Angle:', angle)
-        if angle is not None:
-            self.executor.interaction.operate(lambda: self.do_turn_angle(angle * -1), block=True)
+        angle_to_turn = self.get_angle_between(angle, 0)
+        if angle_to_turn != 0:
+            self.executor.interaction.operate(lambda: self.do_turn_angle(angle_to_turn * -1), block=True)
 
     def turn_angle(self, angle, vertical_angle=0, middle_click=True):
         self.executor.interaction.operate(lambda: self.do_turn_angle(angle, vertical_angle, middle_click), block=True)
 
     def turn_east_and_move_to(self, fun):
-        angle, _ = self.get_angle()
-        self.info_set('East Angle:', angle)
-        success = self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(angle * -1, fun), block=True)
+        success = self.executor.interaction.operate(lambda: self.do_turn_east_and_move_to(fun), block=True)
         if self.find_f():
             if self.debug:
                 self.screenshot('f_again')
             raise RuntimeError(f'Failed to Claim the Domain Reward, maybe your Inventory is Full!')
         return success
 
-    def do_turn_east_and_move_to(self, angle, fun):
-        self.do_turn_angle(angle)
+    def do_turn_east_and_move_to(self, fun):
+        angle, _ = self.get_angle()
+        self.info_set('East Angle:', angle)
+        angle_to_turn = self.get_angle_between(angle, 0)
+        self.do_turn_angle(angle_to_turn)
         return self.do_walk_to_f(direction_fun=fun, time_out=12)
 
     def catch_butter_fly(self, time_out=10, catch_time=1):
@@ -611,32 +620,24 @@ class BaseGiTask(BaseTask):
         self.log_debug(f'turn_east h:{h} w:{w}')
         center = (w // 2, h // 2)
         target_box = self.get_box_by_name('domain_map_arrow_east')
-        target_box = target_box.scale(1.4)
+        target_box = target_box.scale(1)
         # if self.debug:
         #     self.screenshot('arrow_original', original_mat)
         for angle in range(0, 360):
             # Rotate the template image
-            rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
-            arrow_template.mat = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
-            arrow_template.mask = np.where(np.all(arrow_template.mat == [0, 0, 0], axis=2), 0, 255).astype(np.uint8)
+            rotation_matrix = cv2.getRotationMatrix2D(center, -angle, 1.0)
+            template = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
 
             target = self.find_one(f'arrow_{angle}', box=target_box,
-                                   template=arrow_template, threshold=0.3)
+                                   template=template, threshold=0.01, mask_function=create_non_black_mask)
             # if self.debug and angle % 90 == 0:
             #     self.screenshot(f'arrow_rotated_{angle}', arrow_template.mat)
             if target and target.confidence > max_conf:
                 max_conf = target.confidence
                 max_angle = angle
                 max_target = target
-        arrow_template.mat = original_mat
-        arrow_template.mask = None
         self.log_debug(f'turn_east max_conf: {max_conf} {max_angle}')
-        if max_angle is not None:
-            if max_angle > 180:
-                return 360 - max_angle, max_target
-            else:
-                return max_angle * -1, max_target
-        return 0, None
+        return max_angle, max_target
 
     def do_move_to(self, fun):
         start = time.time()
@@ -732,7 +733,6 @@ class BaseGiTask(BaseTask):
             self.log_info(f'trees: {target} {self.width / 2 - target.center()[0]}')
         else:
             self.log_info('no trees')
-
 
 def get_hwnd_screen_resolution(hwnd):
     # Get the monitor where the hwnd is located

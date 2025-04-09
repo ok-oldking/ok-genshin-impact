@@ -49,6 +49,7 @@ class FarmRelicTask(BaseCombatTask):
             if not self.turn_east_and_move_to(self.find_tree):
                 self.log_error('Can get to the Domain Tree, please move manually, and then click continue!',
                                notify=True)
+                self.screenshot('can_not_goto_tree')
                 self.pause()
                 self.move_to_tree()
             if not self.claim_domain():

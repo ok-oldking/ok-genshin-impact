@@ -16,7 +16,8 @@ class TestAngle(TaskTestCase):
         self.set_image('tests/images/search_arrow.png')
         angle, box = self.task.get_angle()
         print(f'TestAngle {angle}')
-        self.assertIsNot(angle, 0)
+        self.task.screenshot('angle', box.crop_frame(self.task.frame))
+        self.assertTrue(270 < angle < 360)
 
 
 if __name__ == '__main__':
