@@ -60,7 +60,7 @@ omegaconf==2.3.0
 onnxruntime-directml==1.21.0
     # via ok-rapidocr-dml
 opencv-python==4.11.0.86
-    # via
+    # viad
     #   -r .\requirements.in
     #   ok-rapidocr-dml
 packaging==24.2

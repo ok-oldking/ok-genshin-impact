@@ -66,8 +66,6 @@ ok-gi.exe -t 1 -e
 
 * **禁用自动 HDR 和窗口化游戏优化:**
   ![Disable HDR](readmes/img.png)
-* **使用无边框或窗口模式:** 不支持全屏模式。
-  ![Window Mode](readmes/img_1.png)
 * **使用默认游戏亮度:**
   ![Default Brightness](readmes/img_2.png)
 * **禁用外部图形滤镜:** 请勿使用 Nvidia/AMD 游戏滤镜或鲜艳度/HDR 效果。
