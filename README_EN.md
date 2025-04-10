@@ -12,6 +12,9 @@
 [![Downloads](https://img.shields.io/github/downloads/ok-oldking/ok-genshin-impact/total)](https://github.com/ok-oldking/ok-genshin-impact/releases)
 [![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
 
+**Youtube Demo:
+** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/mGFLMr1K6Tw)
+
 **ReadMe:** [English](README_EN.md) | [简体中文](README.md)
 
 **Free to use, will open-source in the future.**
@@ -68,8 +71,6 @@ ok-ww.exe -t 1 -e
 
 * **Disable Auto HDR and Windowed Game Optimization:**
   ![Disable HDR](readmes/img.png)
-* **Use Borderless or Windowed Mode:** Fullscreen is not supported.
-  ![Window Mode](readmes/img_1.png)
 * **Use Default Game Brightness:**
   ![Default Brightness](readmes/img_2.png)
 * **Disable External Graphics Filters:** Do not use Nvidia/AMD game filters or vibrance/HDR effects.
