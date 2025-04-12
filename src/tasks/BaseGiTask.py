@@ -444,8 +444,8 @@ class BaseGiTask(BaseTask):
     def open_book(self):
         self.send_key('f1', after_sleep=2)
 
-    def send_key(self, key, after_sleep=0):
-        super().send_key(key, after_sleep=after_sleep, down_time=0.04)
+    def send_key(self, key, after_sleep=0, down_time=0.04):
+        super().send_key(key, after_sleep=after_sleep, down_time=down_time)
 
     def go_to_relic(self):
         self.ensure_main()
