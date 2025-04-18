@@ -125,5 +125,6 @@ class FarmRelicTask(BaseCombatTask):
         if self.in_domain():
             return True
         if self.find_one('relic_pop_up'):
+            self.sleep(1.5)
             self.back(after_sleep=1)
             return False
