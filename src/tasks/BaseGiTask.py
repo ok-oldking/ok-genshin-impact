@@ -450,9 +450,9 @@ class BaseGiTask(BaseTask):
     def go_to_relic(self):
         self.ensure_main()
         self.open_book()
-        self.click_relative(0.16, 0.42, after_sleep=1)
-        self.click_relative(0.47, 0.2, after_sleep=0.5)
-        self.click_relative(0.46, 0.31, after_sleep=0.5)
+        self.click_relative(0.16, 0.42, after_sleep=0.5)
+        # self.click_relative(0.47, 0.2, after_sleep=0.5)
+        # self.click_relative(0.46, 0.31, after_sleep=0.5)
 
     def scroll_into_relic(self, n, use_resin):
         self.go_to_relic()
