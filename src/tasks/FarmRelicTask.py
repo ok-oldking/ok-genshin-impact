@@ -12,7 +12,7 @@ class FarmRelicTask(BaseCombatTask):
         self.name = "Farm Relic Task"
         self.description = "Farm Relic Task"
         self.default_config.update({
-            'Relic Domain To Farm': 16,
+            'Relic Domain To Farm': 1,
             'Combat Sequence': '1EQ2EQ3EQ4EQ',
             'Use Original Resin': False
         })
