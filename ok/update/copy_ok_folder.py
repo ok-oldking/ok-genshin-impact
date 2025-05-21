@@ -13,6 +13,11 @@ def find_and_copy_site_package():
 
     # Define the target directory pattern
     target_pattern = os.path.join('Lib', 'site-packages')
+    destination = os.path.join(current_dir, folder_to_copy)
+
+    if os.path.exists(destination):
+        print(f'destination exists: {destination}, skip copying')
+        return
 
     # Loop through all potential site-packages directories
     for path in sys.path:
@@ -21,7 +26,6 @@ def find_and_copy_site_package():
             full_path = os.path.join(normalized_path, folder_to_copy)
             if os.path.exists(full_path) and os.path.isdir(full_path):
                 # Define the destination path
-                destination = os.path.join(current_dir, folder_to_copy)
 
                 # Copy the folder
                 shutil.copytree(full_path, destination)

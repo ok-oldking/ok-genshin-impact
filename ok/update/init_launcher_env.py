@@ -33,7 +33,8 @@ def replace_string_in_file(file_path, old_pattern, new_string):
     logger.info(f"Replaced pattern '{old_pattern}' with '{new_string}' in {file_path}")
 
 
-def create_repo_venv(python_dir, code_dir='.', last_env_folder=None, index_url="https://pypi.org/simple/"):
+def create_repo_venv(python_dir, code_dir='.', last_env_folder=None, index_url="https://pypi.org/simple/",
+                     no_cache=True):
     logger.info(f'create_repo_venv: {python_dir} {code_dir} {last_env_folder} {index_url}')
     lenv_path = create_venv(python_dir, code_dir, last_env_folder)
     # return
@@ -41,7 +42,9 @@ def create_repo_venv(python_dir, code_dir='.', last_env_folder=None, index_url="
         python_executable = os.path.join(lenv_path, 'Scripts', 'python')
         if not os.path.exists(os.path.join(lenv_path, 'Scripts', 'pip-sync.exe')):
             logger.info(f'pip-sync.exe not found, install using pip')
-            params_install = [python_executable, '-m', 'pip', "install", "pip-tools", "-i", index_url, '--no-cache']
+            params_install = [python_executable, '-m', 'pip', "install", "pip-tools", "-i", index_url]
+            if no_cache:
+                params_install.append('--no-cache')
             print(f"Running command: {' '.join(params_install)}")
             result_install = subprocess.run(params_install, check=True, capture_output=True,
                                             encoding='utf-8',
@@ -64,8 +67,12 @@ def create_repo_venv(python_dir, code_dir='.', last_env_folder=None, index_url="
         if not last_env_folder or not files_exist(requirements, old_requirements) or not files_content_equal(
                 requirements, old_requirements):
             params_sync = [python_executable, '-m', 'piptools', 'sync', requirements, '--python-executable',
-                           python_executable, "-i", index_url, '--pip-args',
-                           '"--no-cache"']
+                           python_executable]
+            if not check_string_in_file(requirements, '--index-url'):
+                if not check_string_in_file(requirements, '--extra-index-url'):
+                    params_sync += ["-i", index_url]
+            if no_cache:
+                params_sync += ['--pip-args', '"--no-cache"']
             logger.info(f"\nRunning command: {' '.join(params_sync)}")
             result_sync = subprocess.run(params_sync, check=True, capture_output=True, encoding='utf-8',
                                          text=True)
@@ -87,6 +94,12 @@ def create_repo_venv(python_dir, code_dir='.', last_env_folder=None, index_url="
         return True
     except Exception as e:
         logger.error("An error occurred while creating the virtual environment.", e)
+
+
+def check_string_in_file(filename, search_string):
+    with open(filename, 'r') as file:
+        content = file.read()
+        return search_string in content
 
 
 def files_exist(file1, file2):

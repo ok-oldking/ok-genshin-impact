@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
         copy_exe_files(repo_dir, build_dir)
 
-        if not create_repo_venv(python_dir, repo_dir):
+        if not create_repo_venv(python_dir, repo_dir, no_cache=False):
             sys.exit(1)
 
         config = Config('launcher', {
