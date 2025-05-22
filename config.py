@@ -73,6 +73,9 @@ config = {
         'lib': 'rapidocr',
         'target_height': 720,
     },
+    'analytics': {
+        'report_url': 'http://report.ok-script.cn:8080/report',
+    },
     'windows': {  # required  when supporting windows game
         'exe': ['GenshinImpact.exe', 'YuanShen.exe'],
         'calculate_pc_exe_path': calculate_pc_exe_path,
