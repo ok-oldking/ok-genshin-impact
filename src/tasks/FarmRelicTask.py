@@ -122,9 +122,9 @@ class FarmRelicTask(BaseCombatTask):
             raise RuntimeError('Can not walk to the tree')
 
     def wait_in_domain(self):
-        if self.in_domain():
-            return True
         if self.find_one('relic_pop_up'):
             self.sleep(1.5)
             self.back(after_sleep=1)
             return False
+        if self.in_domain():
+            return True
