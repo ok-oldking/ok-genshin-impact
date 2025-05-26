@@ -95,6 +95,7 @@ class FarmRelicTask(BaseCombatTask):
         self.log_info(f'Farm Relic Domain can_continue: {can_continue}')
         if can_continue:
             self.confirm_dialog(btn='btn_ok')
+            self.sleep(5)
         else:
             self.confirm_dialog(btn='dungeon_exit')
         return can_continue
@@ -123,8 +124,14 @@ class FarmRelicTask(BaseCombatTask):
 
     def wait_in_domain(self):
         if self.find_one('relic_pop_up'):
-            self.sleep(1.5)
+            if self.debug:
+                self.screenshot('relic_pop_up before')
+            self.sleep(1)
             self.back(after_sleep=1)
+            if self.debug:
+                self.screenshot('relic_pop_up after')
             return False
         if self.in_domain():
+            if self.debug:
+                self.screenshot('in_domain')
             return True
