@@ -42,7 +42,7 @@ class FarmRelicTask(BaseCombatTask):
         self.info_set('current task', 'farm_relic_til_no_stamina')
         while True:
             self.info_incr('Farm Relic Domain Count')
-            self.wait_until(self.wait_in_domain, settle_time=2, time_out=50, raise_if_not_found=True)
+            self.wait_until(self.wait_in_domain, settle_time=1, time_out=50, raise_if_not_found=True)
             if not self.walk_to_f(time_out=7):
                 raise RuntimeError('Can not find the Domain key!')
             self.auto_combat(end_check=self.domain_combat_end)
