@@ -1,0 +1,23 @@
+name: mirrorchyan_uploading
+
+on:
+  workflow_dispatch:
+  release:
+    types: [released]
+
+jobs:
+
+  mirrorchyan:
+    runs-on: macos-latest
+    steps:
+      - uses: MirrorChyan/uploading-action@v1
+        with:
+          filetype: latest-release
+          filename: "ok-gi-*.7z"
+          p7zip: true
+          mirrorchyan_rid: okgi
+
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          owner: ok-oldking
+          repo: ok-genshin-impact
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}
