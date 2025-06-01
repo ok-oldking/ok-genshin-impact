@@ -6,7 +6,7 @@ import numpy as np
 
 from ok import ConfigOption
 
-version = "v99.0.11"
+version = "dev"
 
 def make_bottom_right_black(frame):
     """

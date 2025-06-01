@@ -17,6 +17,7 @@ data/
 configs/
 paddle_model/
 ok/
+repo/
 *.dat
 ok
 md5.txt
