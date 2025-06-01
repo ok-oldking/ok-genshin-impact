@@ -9,6 +9,7 @@ def init_ok(config):
     if ok is None:
         from ok import OK
         config['debug'] = True
+        config['analytics'] = None
         ok = OK(config)
         ok.task_executor.debug_mode = True
         ok.device_manager.capture_method = ImageCaptureMethod(
