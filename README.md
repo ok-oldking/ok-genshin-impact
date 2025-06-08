@@ -36,9 +36,9 @@
 
 ### 绿色免安装版, 解压后双击ok-gi.exe, 下载后可应用内更新
 
-* [GitHub下载](https://github.com/ok-oldking/ok-gf2/releases), 免费网页直链, 不要点击下载Source Code,
+* [GitHub下载](https://github.com/ok-oldking/ok-genshin-impact/releases), 免费网页直链, 不要点击下载Source Code,
   点击下载7z压缩包
-* [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okgf2), 国内网页直链, 下载需要购买CD-KEY,
+* [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okgi), 国内网页直链, 下载需要购买CD-KEY,
   已有Mirror酱CD-KEY可免费下载
 * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
 

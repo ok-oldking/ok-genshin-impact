@@ -6,7 +6,7 @@ import numpy as np
 
 from ok import ConfigOption
 
-version = "v5.6.11"
+version = "v5.6.12"
 
 def make_bottom_right_black(frame):
     """
@@ -84,7 +84,7 @@ config = {
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
         'bit_blt_render_full': True,
         'check_hdr': True,
-        'force_no_hdr': True,
+        # 'force_no_hdr': True,
         # 'check_night_light': True,
         'force_no_night_light': False,
         'require_bg': True
