@@ -1,6 +1,6 @@
 from ok import Logger
 from src.tasks.BaseCombatTask import BaseCombatTask
-from src.tasks.BaseGiTask import number_re
+from src.tasks.BaseGiTask import number_re, stamina_re
 
 logger = Logger.get_logger(__name__)
 
@@ -60,33 +60,26 @@ class FarmRelicTask(BaseCombatTask):
         self.turn_east_and_move_to(self.find_tree)
 
     def claim_domain(self):
-        if self.find_one('dungeon_use_double'):
-            double_resin = self.ocr(box='box_double_stamina', match=number_re)
-            if double_resin:
-                double_resin = int(double_resin[0].name)
-            else:
-                double_resin = 1
-            resin = self.ocr(box='box_stamina', match=number_re)
-            claim_btn = None
-            if double_resin > 0:
-                claim_btn = 'dungeon_use_double'
-                double_resin -= 1
-            else:
-                if self.config.get('Use Original Resin'):
-                    if resin >= 20:
-                        claim_btn = 'dungeon_use_stamina'
-            if claim_btn:
-                claim_btn = self.find_one('dungeon_use_double')
-                if claim_btn:
-                    self.click(claim_btn)
+        self.wait_feature('tree_close', settle_time=0.3)
+        use_box = self.box_of_screen(0.27, 0.33, 0.36, 0.74)
+        if use2 := self.find_one('use_2', box=use_box):
+            use2.x += self.width_of_screen(0.65 - 0.32)
+            self.click(use2)
+        elif use1 := self.find_one('use_1', box=use_box):
+            if self.config.get('Use Original Resin'):
+                use1.x += self.width_of_screen(0.65 - 0.32)
+                self.click(use1)
             else:
                 self.back(after_sleep=1)
                 self.back(after_sleep=1)
                 self.confirm_dialog()
                 return False
+        else:
+            raise RuntimeError('Can tree claim!')
 
         self.wait_feature('btn_ok', box='bottom', time_out=20, raise_if_not_found=True,
                           settle_time=1, threshold=0.9)
+
         self.sleep(3)
         double_resin, resin = self.find_resin_left()
         self.info_set('Resin', resin)
@@ -101,18 +94,13 @@ class FarmRelicTask(BaseCombatTask):
         return can_continue
 
     def find_resin_left(self):
-        lefts = self.ocr(box='box_resin_left', match=number_re, log=True)
-        if not lefts:
+        double_resin = 1 if self.find_one('double_resin_icon') else 0
+
+        stamina_texts = self.ocr(box=self.box_of_screen(0.72, 0.02, 0.83, 0.07), match=stamina_re, log=True)
+        if not stamina_texts:
             raise Exception('Can not find resin left!')
-        if len(lefts) == 1:
-            double_resin = 0
-            resin = int(lefts[0].name)
-        elif len(lefts) == 2:
-            double_resin = int(lefts[0].name)
-            resin = int(lefts[-1].name)
-        else:
-            raise Exception('Resin left box too many!')
-        return double_resin, resin
+        
+        return double_resin, int(stamina_texts[0].name.split('/')[0])
 
     def turn_and_walk_to_tree(self):
         self.executor.interaction.operate(self.do_turn_and_walk_to_tree, block=True)
