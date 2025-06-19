@@ -95,8 +95,8 @@ class FarmRelicTask(BaseCombatTask):
 
     def find_resin_left(self):
         double_resin = 1 if self.find_one('double_resin_icon') else 0
-
-        stamina_texts = self.ocr(box=self.box_of_screen(0.72, 0.02, 0.83, 0.07), match=stamina_re, log=True)
+        stamina_texts = self.ocr(box=self.box_of_screen(0.72, 0.02, 0.83, 0.07),
+                                 log=True)
         if not stamina_texts:
             raise Exception('Can not find resin left!')
         
