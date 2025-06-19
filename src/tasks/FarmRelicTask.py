@@ -98,9 +98,12 @@ class FarmRelicTask(BaseCombatTask):
         stamina_texts = self.ocr(box=self.box_of_screen(0.72, 0.02, 0.83, 0.07),
                                  log=True)
         if not stamina_texts:
-            raise Exception('Can not find resin left!')
-        
-        return double_resin, int(stamina_texts[0].name.split('/')[0])
+            logger.error('Can not find resin left!')
+            resin = 0
+        else:
+            resin = int(stamina_texts[0].name.split('/')[0])
+
+        return double_resin, resin
 
     def turn_and_walk_to_tree(self):
         self.executor.interaction.operate(self.do_turn_and_walk_to_tree, block=True)
