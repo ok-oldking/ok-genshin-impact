@@ -94,7 +94,7 @@ class FarmRelicTask(BaseCombatTask):
         return can_continue
 
     def find_resin_left(self):
-        double_resin = 1 if self.find_one('double_resin_icon') else 0
+        double_resin = 1 if self.find_one('double_resin_icon', horizontal_variance=0.3) else 0
         stamina_texts = self.ocr(box=self.box_of_screen(0.72, 0.02, 0.83, 0.07),
                                  log=True)
         if not stamina_texts:
