@@ -52,58 +52,13 @@ class FarmRelicTask(BaseCombatTask):
                 self.screenshot('can_not_goto_tree')
                 self.pause()
                 self.move_to_tree()
+            self.wait_feature('tree_close', settle_time=0.3)
             if not self.claim_domain():
                 break
         self.wait_world()
 
     def move_to_tree(self):
         self.turn_east_and_move_to(self.find_tree)
-
-    def claim_domain(self):
-        self.wait_feature('tree_close', settle_time=0.3)
-        use_box = self.box_of_screen(0.27, 0.33, 0.36, 0.74)
-        if use2 := self.find_one('use_2', box=use_box):
-            use2.x += self.width_of_screen(0.65 - 0.32)
-            self.click(use2)
-        elif use1 := self.find_one('use_1', box=use_box):
-            if self.config.get('Use Original Resin'):
-                use1.x += self.width_of_screen(0.65 - 0.32)
-                self.click(use1)
-            else:
-                self.back(after_sleep=1)
-                self.back(after_sleep=1)
-                self.confirm_dialog()
-                return False
-        else:
-            raise RuntimeError('Can tree claim!')
-
-        self.wait_feature('btn_ok', box='bottom', time_out=20, raise_if_not_found=True,
-                          settle_time=1, threshold=0.9)
-
-        self.sleep(3)
-        double_resin, resin = self.find_resin_left()
-        self.info_set('Resin', resin)
-        self.info_incr('Double Resin', double_resin)
-        can_continue = double_resin > 0 or (self.config.get('Use Original Resin') and resin >= 20)
-        self.log_info(f'Farm Relic Domain can_continue: {can_continue}')
-        if can_continue:
-            self.confirm_dialog(btn='btn_ok')
-            self.sleep(5)
-        else:
-            self.confirm_dialog(btn='dungeon_exit')
-        return can_continue
-
-    def find_resin_left(self):
-        double_resin = 1 if self.find_one('double_resin_icon', horizontal_variance=0.3) else 0
-        stamina_texts = self.ocr(box=self.box_of_screen(0.72, 0.02, 0.83, 0.07),
-                                 log=True)
-        if not stamina_texts:
-            logger.error('Can not find resin left!')
-            resin = 0
-        else:
-            resin = int(stamina_texts[0].name.split('/')[0])
-
-        return double_resin, resin
 
     def turn_and_walk_to_tree(self):
         self.executor.interaction.operate(self.do_turn_and_walk_to_tree, block=True)

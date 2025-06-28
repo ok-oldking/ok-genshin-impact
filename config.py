@@ -146,7 +146,9 @@ config = {
     'error_log_file': 'logs/ok-ww_error.log',
     'version': version,
     'onetime_tasks': [  # tasks to execute
+        ["src.tasks.NewAbyssDailyTask", "NewAbyssDailyTask"],
         ["src.tasks.DailyTask", "DailyTask"],
+        ["src.tasks.FarmNewAbyssTask", "FarmNewAbyssTask"],
         ["src.tasks.FarmRelicTask", "FarmRelicTask"],
         ["src.tasks.ClaimDailyRewardTask", "ClaimDailyRewardTask"],
         ["src.tasks.CraftResinTask", "CraftResinTask"],

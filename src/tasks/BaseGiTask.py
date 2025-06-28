@@ -56,10 +56,9 @@ class BaseGiTask(BaseTask):
             return True
 
     def in_world_or_domain(self):
-        if self.in_world():
+        if self.in_world() or self.in_domain():
             og.my_app.logged_in = True
             return True
-        return self.in_domain()
 
     def in_domain(self):
         return self.find_one('top_left_dungeon')
@@ -500,6 +499,95 @@ class BaseGiTask(BaseTask):
     def wait_world(self, time_out=60, settle_time=1):
         self.wait_until(self.in_world, time_out=time_out, settle_time=settle_time, raise_if_not_found=True)
 
+    def walk_to_chest(self):
+        self.executor.interaction.operate(lambda: self.do_walk_to_chest, block=True)
+
+    def do_walk_to_chest(self):
+        if self.find_key():
+            self.send_key('f')
+            return True
+        if self.find_chest_icon():
+            if not self.walk_to_box(self.find_chest_icon, end_condition=self.find_key):
+                raise Exception("无法找到拾取体力!")
+            self.send_key('f')
+            return True
+        raise Exception("找不到钥匙或者宝箱图标!")
+
+    def find_key(self):
+        return self.find_one("pick_b_key", vertical_variance=0.16)
+
+    def find_chest_icon(self):
+        return self.find_one('chest_icon', box=self.box_of_screen(0.1, 0.2, 0.9, 0.8), threshold=0.7)
+
+    def walk_to_box(self, find_function, time_out=40, end_condition=None, y_offset=0):
+        if not find_function:
+            self.log_info('find_function not found, break')
+            return False
+        last_direction = None
+        start = time.time()
+        ended = False
+        last_target = None
+        centered = False
+        last_x_distance = None
+        while time.time() - start < time_out:
+            self.next_frame()
+            if end_condition:
+                ended = end_condition()
+                if ended:
+                    break
+            treasure_icon = find_function()
+            if isinstance(treasure_icon, list):
+                if len(treasure_icon) > 0:
+                    treasure_icon = treasure_icon[0]
+                else:
+                    treasure_icon = None
+            if treasure_icon:
+                last_target = treasure_icon
+            if last_target is None:
+                next_direction = self.opposite_direction(last_direction)
+                self.log_info('find_function not found, change to opposite direction')
+            else:
+                x, y = last_target.center()
+                y = max(0, y - self.height_of_screen(y_offset))
+                x_distance = x - self.width_of_screen(0.5)
+                centered = centered or (last_x_distance is not None and x_distance * last_x_distance < 0)
+                last_x_distance = x_distance
+                if not centered:
+                    if x > self.width_of_screen(0.5):
+                        next_direction = 'd'
+                    else:
+                        next_direction = 'a'
+                else:
+                    if y > self.height_of_screen(0.5):
+                        next_direction = 's'
+                    else:
+                        next_direction = 'w'
+                if next_direction == 'd' or next_direction == 'a':
+                    if last_direction:
+                        self.send_key_up(last_direction)
+                        self.sleep(0.01)
+                    self.send_key_down(next_direction)
+                    self.sleep(0.1)
+                    self.send_key_up(next_direction)
+                    self.sleep(0.2)
+                    last_direction = None
+                    continue
+
+            if next_direction != last_direction:
+                if last_direction:
+                    self.send_key_up(last_direction)
+                    self.sleep(0.01)
+                last_direction = next_direction
+                if next_direction:
+                    self.send_key_down(next_direction)
+        if last_direction:
+            self.send_key_up(last_direction)
+            self.sleep(0.001)
+        if not end_condition:
+            return last_direction is not None
+        else:
+            return ended
+
     def measure_scroll(self):
         last_box = self.box_of_screen(0.39, 0.66, 0.50, 0.72)
         last_crop = last_box.crop_frame(self.frame)
@@ -528,7 +616,7 @@ class BaseGiTask(BaseTask):
     def confirm_dialog(self, btn='btn_ok'):
         btn_ok = self.find_feature(btn, box='bottom', threshold=0.9)
         if not btn_ok:
-            raise Exception('Can not find OK button!')
+            return
         if len(btn_ok) > 1:
             raise Exception('Found more than one OK button!')
         self.click(btn_ok)
@@ -674,6 +762,26 @@ class BaseGiTask(BaseTask):
             self.wait_click_feature('claim_all', box='bottom_left', settle_time=1)
         self.ensure_main()
 
+    def teleport_and_catch_butterfly(self):
+        self.send_key('m', after_sleep=1)
+        teleport = self.find_one('map_option_waypoint', box=self.box_of_screen(0.04, 0.41, 0.17, 0.60))
+        self.click_box(teleport, after_sleep=1)
+        self.wait_confirm_dialog(btn='btn_teleport', box='bottom_right')
+        self.wait_world(settle_time=1)
+        self.turn_angle(140, middle_click=False)
+        self.catch_butter_fly(time_out=1.4, catch_time=0.8)
+
+        # sea butterfly
+        self.send_key('m', after_sleep=1)
+        self.click_relative(0.02, 0.59, after_sleep=1)
+
+        teleport = self.find_one('map_option_waypoint', box=self.box_of_screen(0.72, 0.07, 0.93, 0.26))
+        self.click_box(teleport, after_sleep=1)
+        self.wait_confirm_dialog(btn='btn_teleport', box='bottom_right')
+        self.wait_world(settle_time=1)
+        self.turn_angle(92, 190, False)
+        self.catch_butter_fly(6, 1)
+
     def claim_battle_pass(self):
         if self.find_red_dot('box_top_right_battle_pass'):
             self.send_key('f4')
@@ -733,6 +841,60 @@ class BaseGiTask(BaseTask):
             self.log_info(f'trees: {target} {self.width / 2 - target.center()[0]}')
         else:
             self.log_info('no trees')
+
+    def claim_domain(self):
+        self.wait_feature('tree_close', settle_time=0.3)
+        use_box = self.box_of_screen(0.27, 0.33, 0.36, 0.74)
+        if use2 := self.find_one('use_2', box=use_box):
+            use2.x += self.width_of_screen(0.65 - 0.32)
+            self.click(use2)
+        elif use1 := self.find_one('use_1', box=use_box):
+            if self.config.get('Use Original Resin'):
+                use1.x += self.width_of_screen(0.65 - 0.32)
+                self.click(use1)
+            else:
+                self.back(after_sleep=1)
+                self.back(after_sleep=1)
+                self.confirm_dialog()
+                return False
+        else:
+            raise RuntimeError('Can tree claim!')
+
+        btn_ok = self.wait_feature('btn_ok', box='bottom', time_out=6, raise_if_not_found=False,
+                                   settle_time=1, threshold=0.9)
+        if not btn_ok:
+            self.back(after_sleep=1)
+            self.back(after_sleep=1)
+            self.confirm_dialog()
+            return False
+
+        self.sleep(3)
+        double_resin, resin = self.find_resin_left()
+        self.info_set('Resin', resin)
+        self.info_incr('Double Resin', double_resin)
+        can_continue = double_resin > 0 or (self.config.get('Use Original Resin') and resin >= 20)
+        self.log_info(f'Farm Relic Domain can_continue: {can_continue}')
+        if can_continue:
+            self.confirm_dialog(btn='btn_ok')
+            self.sleep(5)
+        else:
+            self.confirm_dialog(btn='dungeon_exit')
+        return can_continue
+
+    def find_resin_left(self):
+        double_resin = 1 if self.find_one('double_resin_icon', horizontal_variance=0.3) else 0
+        stamina_texts = self.ocr(box=self.box_of_screen(0.7, 0.01, 0.92, 0.08), match=[stamina_re, number_re],
+                                 log=True)
+        if not stamina_texts:
+            logger.error('Can not find resin left!')
+            resin = 0
+        else:
+            if not stamina_texts[-1].name.split('/')[0]:
+                resin = int(stamina_texts[-2].name.split('/')[0])
+            else:
+                resin = int(stamina_texts[-1].name.split('/')[0])
+
+        return double_resin, resin
 
 def get_hwnd_screen_resolution(hwnd):
     # Get the monitor where the hwnd is located

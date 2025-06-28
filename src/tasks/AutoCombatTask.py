@@ -22,7 +22,7 @@ class AutoCombatTask(TriggerTask, BaseCombatTask):
         self.last_pick_time = 0
 
     def run(self):
-        if self.in_world_or_domain():
+        if self.q_ended():
             self._in_combat = self.check_health_bar()
             if self._in_combat:
                 self.auto_combat(end_check=self.end_combat_check)

@@ -12,6 +12,9 @@ from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
 logger = Logger.get_logger(__name__)
 
 
+class NoTeamException(Exception):
+    pass
+
 class BaseCombatTask(BaseGiTask):
 
     def __init__(self, *args, **kwargs):
@@ -57,14 +60,18 @@ class BaseCombatTask(BaseGiTask):
             elapsed = time.time() - start
             if elapsed > time_out:
                 raise RuntimeError('Auto Combat timed out after {} seconds!'.format(time_out))
-            if elapsed > 3 and end_check is not None and self.in_world_or_domain() and end_check():
-                if self.debug:
-                    self.screenshot('combat_end')
-                self.info_incr('Combat Count')
-                return True
+            if elapsed > 3 and end_check is not None:
+                end = end_check()
+                if end:
+                    if self.debug:
+                        self.screenshot('combat_end')
+                    self.info_incr('Combat Count')
+                    return end
             action = combat_str[self.action_index % len(combat_str)]
             if to_switch := safe_parse_int(action):  # switch command
                 current_char = self.get_current_char()
+                if not current_char:
+                    return self.wait_until(end_check, time_out=10, settle_time=1, raise_if_not_found=True)
                 if current_char != to_switch:
                     self.send_key(to_switch)
                     self.combat_sleep()
@@ -86,13 +93,16 @@ class BaseCombatTask(BaseGiTask):
                     if white_percent > 0.05:
                         self.send_key('q')
                         self.sleep(1.5)
-                        self.wait_until(self.in_world_or_domain, time_out=5)
+                        self.wait_until(self.q_ended, time_out=5, raise_if_not_found=True)
             elif action.upper() == 'A':
                 self.click_relative(0.5, 0.5)
                 self.combat_sleep()
             else:
                 raise Exception('Unknown action: {}'.format(action))
             self.action_index += 1
+
+    def q_ended(self):
+        return self.in_world_or_domain()
 
     def get_cd(self, box_name):
         cd_text = self.ocr(box=box_name, match=cd_re)
@@ -116,7 +126,7 @@ class BaseCombatTask(BaseGiTask):
         char4 = self.find_one('4')
         chars = [char1, char2, char3, char4]
         if sum(1 for item in chars if item is None) > 1:
-            raise Exception('Can only combat with a team of 4!')
+            return False
         lowest_char = None
         lowest_conf = 1
         for i in range(len(chars)):
