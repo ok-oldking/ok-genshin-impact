@@ -79,7 +79,7 @@ class FarmNewAbyssTask(BaseCombatTask):
             self.click(back, after_sleep=1)
             self.wait_new_abyss()
             self.sleep(1)
-            self.do_walk_to_chest()
+            self.turn_and_walk_to_box()
             if not self.claim_domain():
                 break
         self.sleep(1)

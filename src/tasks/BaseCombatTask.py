@@ -57,6 +57,7 @@ class BaseCombatTask(BaseGiTask):
         self.last_action_start = time.time()
         combat_str = self.combat_config.get('Combat Sequence').strip()
         while True:
+            self.next_frame()
             elapsed = time.time() - start
             if elapsed > time_out:
                 raise RuntimeError('Auto Combat timed out after {} seconds!'.format(time_out))
@@ -71,7 +72,8 @@ class BaseCombatTask(BaseGiTask):
             if to_switch := safe_parse_int(action):  # switch command
                 current_char = self.get_current_char()
                 if not current_char:
-                    return self.wait_until(end_check, time_out=10, settle_time=1, raise_if_not_found=True)
+                    self.combat_sleep()
+                    continue
                 if current_char != to_switch:
                     self.send_key(to_switch)
                     self.combat_sleep()

@@ -70,8 +70,10 @@ config = {
         'default_threshold': 0.8,
     },
     'ocr': {
-        'lib': 'rapidocr',
-        'target_height': 720,
+        'lib': 'onnxocr',
+        'params': {
+            'use_openvino': True,
+        }
     },
     'analytics': {
         'report_url': 'http://report.ok-script.cn:8080/report',

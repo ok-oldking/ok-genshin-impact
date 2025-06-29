@@ -1,0 +1,11 @@
+name: "ok-gi"
+uac: true
+profiles:
+  - name: "CPU"
+    git_url: "https://cnb.cool/ok-oldking/ok-genshin-impact.git"
+    admin: true
+    main_script: "main.py"
+    requires_python: "3.12"
+    requirements: "requirements.txt"
+    # PYTHONPATH: "your/default/path" # Optional, will be "" if missing
+

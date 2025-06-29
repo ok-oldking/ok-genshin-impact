@@ -499,25 +499,65 @@ class BaseGiTask(BaseTask):
     def wait_world(self, time_out=60, settle_time=1):
         self.wait_until(self.in_world, time_out=time_out, settle_time=settle_time, raise_if_not_found=True)
 
-    def walk_to_chest(self):
-        self.executor.interaction.operate(lambda: self.do_walk_to_chest, block=True)
-
-    def do_walk_to_chest(self):
-        if self.find_key():
-            self.send_key('f')
-            return True
-        if self.find_chest_icon():
-            if not self.walk_to_box(self.find_chest_icon, end_condition=self.find_key):
-                raise Exception("无法找到拾取体力!")
-            self.send_key('f')
-            return True
-        raise Exception("找不到钥匙或者宝箱图标!")
-
     def find_key(self):
         return self.find_one("pick_b_key", vertical_variance=0.16)
 
     def find_chest_icon(self):
         return self.find_one('chest_icon', box=self.box_of_screen(0.1, 0.2, 0.9, 0.8), threshold=0.7)
+
+    def turn_and_walk_to_box(self):
+        if self.find_key():
+            self.send_key('f')
+            return True
+        if self.find_chest_icon():
+            self.executor.interaction.operate(
+                lambda: self.do_turn_and_walk_to_box(find_function=self.find_chest_icon, time_out=20,
+                                                     end_condition=self.find_key), block=True)
+            self.send_key('f')
+            return True
+        raise Exception("找不到钥匙或者宝箱图标!")
+
+    def do_turn_and_walk_to_box(self, find_function=None, time_out=40, end_condition=None):
+        if not find_function():
+            self.log_info('find_function not found, break')
+            return False
+
+        self.executor.interaction.do_middle_click(self.width_of_screen(0.5), self.height_of_screen(0.5),
+                                                  down_time=0.02)
+        self.sleep(0.5)
+        turn_per_angle = self.get_turn_per_angle()
+        x_move = round(turn_per_angle) * 3
+        start = time.time()
+        centered = False
+        while time.time() - start < 10:
+            self.next_frame()
+            box = find_function()
+            if not box:
+                logger.error('can not find box while turning')
+                return False
+            distance = box.center()[0] - self.width_of_screen(0.5)
+            if abs(distance) < self.width_of_screen(0.08):
+                logger.info(f'box centered: {box.center()}')
+                centered = True
+                break
+            if distance < 0:
+                to_move = x_move * -1
+            else:
+                to_move = x_move
+            if abs(distance) > self.width_of_screen(0.2):
+                to_move = to_move * 3
+            self.executor.interaction.do_move_mouse_relative(to_move, 0)
+            self.sleep(0.01)
+        if not centered:
+            logger.error(f'can not center box')
+            return False
+        self.do_send_key_down('w')
+        while time.time() - start < time_out:
+            self.next_frame()
+            if end_condition():
+                break
+        self.do_send_key_up('w')
+        return True
 
     def walk_to_box(self, find_function, time_out=40, end_condition=None, y_offset=0):
         if not find_function:
@@ -550,7 +590,10 @@ class BaseGiTask(BaseTask):
                 x, y = last_target.center()
                 y = max(0, y - self.height_of_screen(y_offset))
                 x_distance = x - self.width_of_screen(0.5)
-                centered = centered or (last_x_distance is not None and x_distance * last_x_distance < 0)
+                centered = centered or (last_x_distance is not None and x_distance * last_x_distance < 0) or abs(
+                    x_distance) < self.width_of_screen(0.12)
+                if abs(x_distance) > self.width_of_screen(0.26):
+                    centered = False
                 last_x_distance = x_distance
                 if not centered:
                     if x > self.width_of_screen(0.5):

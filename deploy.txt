@@ -11,4 +11,4 @@ README.md
 README_EN.md
 readmes
 i18n
-ok.yaml
+pyappify.yaml

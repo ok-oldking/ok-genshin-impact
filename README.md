@@ -17,9 +17,6 @@
 
 **说明:** [English](README_EN.md) | [简体中文](README.md)
 
-**免费使用, 以后会开源.**
-**现在源码可以参考我的开源鸣潮项目: [OK-WW](https://github.com/ok-oldking/ok-wuthering-waves)**
-
 [⭐️ Star on GitHub](https://github.com/ok-oldking/ok-genshin-impact)
 
 ![OK-GI Demo](readmes/img_4.png)
@@ -37,8 +34,8 @@
 ### 绿色免安装版, 解压后双击ok-gi.exe, 下载后可应用内更新
 
 * [GitHub下载](https://github.com/ok-oldking/ok-genshin-impact/releases), 免费网页直链, 不要点击下载Source Code,
-  点击下载7z压缩包
-* [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okgi), 国内网页直链, 下载需要购买CD-KEY,
+  点击下载zip包
+* [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okgi&source=ok-gi-readme), 国内网页直链, 下载需要购买CD-KEY,
   已有Mirror酱CD-KEY可免费下载
 * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
 
