@@ -12,9 +12,9 @@ jobs:
         with:
           filetype: latest-release
           filename: "ok-gi-win32-CPU.zip"
-          mirrorchyan_rid: okgf2
+          mirrorchyan_rid: okgi
 
           github_token: ${{ secrets.GITHUB_TOKEN }}
           owner: ok-oldking
-          repo: ok-gf2
+          repo: ok-genshin-impact
           upload_token: ${{ secrets.MirrorChyanUploadToken }}

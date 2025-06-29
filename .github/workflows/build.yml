@@ -2,12 +2,15 @@ name: Push REPO
 
 on:
   push:
-    # Sequence of patterns matched against refs/tags
     tags:
       - 'v*'
 
 jobs:
   build:
+
+    permissions:
+      contents: write
+      actions: write
 
     runs-on: windows-latest
 
@@ -29,9 +32,9 @@ jobs:
           echo "action_state=yellow" >> $env:GITHUB_ENV
           echo "${{ env.action_state }}"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -73,15 +76,12 @@ jobs:
           Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
               Write-Host "Running tests in $($_.FullName)"
               try {
-                  # Run the Python unittest command
                   python -m unittest $_.FullName
           
-                  # Check if the previous command succeeded
                   if ($LASTEXITCODE -ne 0) {
                       throw "Tests failed in $($_.FullName)"
                   }
               } catch {
-                  # Stop the loop and return the error
                   Write-Error $_
                   exit 1
               }
