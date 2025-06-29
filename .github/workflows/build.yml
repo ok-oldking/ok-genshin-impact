@@ -87,35 +87,6 @@ jobs:
               }
           }
 
-      - name: Build Executable
-        run: |
-          echo "changes: ${{ steps.changes.outputs.changes }}"
-          
-          python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }} deploy.txt
-          Copy-Item -Path "dist" -Destination "ok-gi" -Recurse
-          7z a -t7z -r "ok-gi-${{ steps.tagName.outputs.tag }}.7z" "ok-gi"     
-          Remove-Item -Path 'ok-gi' -Recurse -Force
-
-        shell: pwsh
-
-      - name: Release to Another Repository
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.OK_GH }} #Important: use a token for the other repo
-        with:
-          repository: ok-oldking/ok-genshin-impact
-          tag_name: ${{ steps.tagName.outputs.tag }}
-          token: ${{ secrets.OK_GH }}
-          name: ok-gi-${{ steps.tagName.outputs.tag }}
-          body: |
-            ### 下载绿色版7z解压包, 解压后双击ok-gi.exe, 下载后可应用内更新, 其他下载链接              
-              * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okgi), 国内网页直链, 下载需要购买CD-KEY,
-                已有Mirror酱CD-KEY可免费下载
-              * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
-          files: |
-            ok-gi-${{ steps.tagName.outputs.tag }}.7z
-
       - name: push to cnb
         run: |
           python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-genshin-impact.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
