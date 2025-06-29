@@ -105,7 +105,7 @@ jobs:
               * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okgi&source=ok-gi-release), 国内网页直链, 下载需要购买CD-KEY,
                 已有Mirror酱CD-KEY可免费下载
               * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
-              * CPU版本为包含依赖的完整版, 5M的zip包为不带依赖的版本, 需要下载依赖
+              * CPU版本为包含依赖的完整版, 3M的zip包为不带依赖的版本, 需要下载依赖
           files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading
