@@ -15,7 +15,7 @@ class FarmNewAbyssTask(BaseCombatTask):
         self.default_config.update({
             '战场': "战场一",
             'Combat Sequence': '1EQ2EQ3EQ4EQ',
-            'Use Original Resin': True
+            'Use Original Resin': False
         })
         self.bgs = ['战场一', '战场二', '战场三']
         self.config_type['战场'] = {'type': "drop_down", 'options': self.bgs}

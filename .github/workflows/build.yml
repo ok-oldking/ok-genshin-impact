@@ -91,9 +91,9 @@ jobs:
         run: |
           python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-genshin-impact.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
 
-      - name: Build with PyAppify Action
+      - name: Build with PyAppify
         id: build-app
-        uses: ok-oldking/pyappify-action@master
+        uses: pyappify
 
       - name: Release
         uses: softprops/action-gh-release@v2
