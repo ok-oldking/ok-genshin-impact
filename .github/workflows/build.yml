@@ -93,7 +93,7 @@ jobs:
 
       - name: Build with PyAppify
         id: build-app
-        uses: pyappify
+        uses: ok-oldking/pyappify
 
       - name: Release
         uses: softprops/action-gh-release@v2
