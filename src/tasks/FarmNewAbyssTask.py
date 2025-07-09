@@ -90,5 +90,3 @@ class FarmNewAbyssTask(BaseCombatTask):
     def combat_ended(self):
         return self.ocr(box="bottom", match="返回")
 
-    def move_to_tree(self):
-        self.turn_east_and_move_to(self.find_tree)

@@ -38,6 +38,7 @@ class FarmRelicTask(BaseCombatTask):
             self.ensure_main()
         return success
 
+
     def farm_relic_til_no_stamina(self):
         self.info_set('current task', 'farm_relic_til_no_stamina')
         while True:
@@ -46,7 +47,7 @@ class FarmRelicTask(BaseCombatTask):
             if not self.walk_to_f(time_out=7):
                 raise RuntimeError('Can not find the Domain key!')
             self.auto_combat(end_check=self.domain_combat_end)
-            if not self.turn_east_and_move_to(self.find_tree):
+            if not self.move_to_tree():
                 self.log_error('Can get to the Domain Tree, please move manually, and then click continue!',
                                notify=True)
                 self.screenshot('can_not_goto_tree')
@@ -58,7 +59,7 @@ class FarmRelicTask(BaseCombatTask):
         self.wait_world()
 
     def move_to_tree(self):
-        self.turn_east_and_move_to(self.find_tree)
+        return self.turn_east_and_move_to(self.find_tree)
 
     def turn_and_walk_to_tree(self):
         self.executor.interaction.operate(self.do_turn_and_walk_to_tree, block=True)

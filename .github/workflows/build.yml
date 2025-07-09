@@ -57,19 +57,9 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Copy ok-script lib
+      - name: inline_ok_requirements
         run: |
-          python -m ok.update.copy_ok_folder
-
-      - name: Rename .py files to .pyx
-        run: |
-          Get-ChildItem -Path .\src -Recurse -Filter *.py -Exclude '__init__.py' | ForEach-Object { Rename-Item $_.FullName -NewName ($_.FullName -replace '\.py$', '.pyx') }
-
-      - name: build cython
-        run: |
-          python setup.py build_ext --inplace
-          Get-ChildItem -Path .\src -Recurse -Filter *.pyx | ForEach-Object { Remove-Item $_.FullName }
-          Get-ChildItem -Path .\src -Recurse -Filter *.cpp | ForEach-Object { Remove-Item $_.FullName }
+          python -m ok.update.inline_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
 
       - name: Run tests
         run: |
@@ -87,13 +77,20 @@ jobs:
               }
           }
 
-      - name: push to cnb
-        run: |
-          python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-genshin-impact.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
+      - name: Sync Repositories
+        id: sync   # Give the step an ID to access its outputs
+        uses: ok-oldking/partial-sync-repo@master # Replace with your action path
+        with:
+          repos: |
+            https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-genshin-impact.git
+          sync_list: 'deploy.txt'
+          tag: ${{ github.ref_name }}
+          gitignore_file: '.update_repo_gitignore'
+          show_author: true
 
       - name: Build with PyAppify
         id: build-app
-        uses: ok-oldking/pyappify-action@v1
+        uses: ok-oldking/pyappify-action@master
 
       - name: Release
         uses: softprops/action-gh-release@v2

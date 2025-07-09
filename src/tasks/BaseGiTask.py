@@ -109,15 +109,25 @@ class BaseGiTask(BaseTask):
             to_turn += 360
         return to_turn
 
-    def get_direction(self, direction_fun, current_direction, threshold=-1):
+    def get_direction(self, direction_fun, current_direction, last_pos, threshold=-1, offset=0):
         target = direction_fun()
         if target:
-            distance = target.center()[0] - self.width / 2
+            distance = target.center()[0] - self.width / 2 + offset
         else:
-            return None
+            return None, None
+        if target is not None and current_direction is not None and last_pos is not None and abs(
+                target.x - last_pos.x) < 4 and abs(
+            target.y - last_pos.y) < 4:
+            if current_direction == 'd':
+                direction = 'a'
+            else:
+                direction = 'd'
+            logger.info(f'not moving return opposite: {direction}')
+            self.sleep(0.5)
+            return direction, target
         if threshold < 0:
             if current_direction:
-                threshold = 0.06
+                threshold = 0.1
             else:
                 threshold = 0.02
         if abs(distance) <= self.width_of_screen(threshold):
@@ -127,7 +137,7 @@ class BaseGiTask(BaseTask):
         else:
             new_direction = 'a'
 
-        return new_direction
+        return new_direction, target
 
     def do_walk_center(self, direction_fun, time_out=3):
         if not direction_fun:
@@ -144,7 +154,7 @@ class BaseGiTask(BaseTask):
                     break
                 if new_direction:
                     self.do_send_key_down(new_direction)
-                    self.sleep(0.01)
+                    self.sleep(0.02)
                 current_direction = new_direction
         self.log_info(f'do_walk_center end {current_direction}')
         if current_direction:
@@ -162,6 +172,10 @@ class BaseGiTask(BaseTask):
         found = False
         current_direction = None
         last_turn = 0
+        last_pos = None
+        starting_pos = None
+        new_direction = None
+        offset = 0
         while time.time() - start < time_out:
             if time.time() - start >= min_time and self.find_f() and (
                     not mini_map_target or not self.mini_map_find(mini_map_target, threshold=0.85)):
@@ -177,7 +191,15 @@ class BaseGiTask(BaseTask):
                 if angle_to_turn:
                     self.do_turn_angle(angle_to_turn, middle_click=False)
             elif direction_fun:
-                new_direction = self.get_direction(direction_fun, current_direction)
+                nd, last_pos = self.get_direction(direction_fun, current_direction, last_pos, offset=offset)
+                if nd and new_direction and nd != new_direction and time.time() - start > 1:
+                    self.log_info(f'direction changed {new_direction}, direction {nd}, set offset to zero')
+                    offset = 0
+                new_direction = nd
+                if starting_pos is None and last_pos:
+                    starting_pos = last_pos
+                    offset = (starting_pos.x - self.width_of_screen(0.5)) / 3
+                    self.log_info('offset is {}'.format(offset))
                 if new_direction != current_direction:
                     self.log_info(f'changed direction {new_direction}')
                     if current_direction:
@@ -693,6 +715,9 @@ class BaseGiTask(BaseTask):
         self.info_set('East Angle:', angle)
         angle_to_turn = self.get_angle_between(angle, 0)
         self.do_turn_angle(angle_to_turn)
+        self.sleep(0.2)
+        # self.do_walk_center(fun)
+        # self.sleep(0.2)
         return self.do_walk_to_f(direction_fun=fun, time_out=12)
 
     def catch_butter_fly(self, time_out=10, catch_time=1):

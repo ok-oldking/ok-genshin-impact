@@ -165,9 +165,9 @@ config = {
     'my_app': ['src.globals', 'Globals'],
     'global_configs': [auto_combat_config],
     "update_pyappify": {
-        'to_version': '1.0.0',
-        'sha256': '89fa16bd122e2d0106ebcaa22500263e67cfb99e71f95739045b6efd08e6f967',
-        'zip_url': 'https://github.com/ok-oldking/ok-genshin-impact/releases/download/v5.7.14/ok-gi-win32.zip',
+        'to_version': 'v1.0.12',
+        'sha256': None,
+        'zip_url': 'https://github.com/ok-oldking/ok-genshin-impact/releases/download/v5.7.22/ok-gi-win32.zip',
     }
 }
 
