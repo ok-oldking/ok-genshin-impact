@@ -38,19 +38,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: 📋 Get Changes between Tags
-        id: changes
-        uses: simbo/changes-between-tags-action@v1
-
       - name: Set UTF-8 encoding
         run: |
           set PYTHONIOENCODING=utf-8
           set PYTHONLEGACYWINDOWSSTDIO=utf-8
           echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
-
-      - name: Get tag name
-        id: tagName
-        uses: olegtarasov/get-tag@v2.1.3
 
       - name: Install dependencies
         run: |
@@ -58,7 +50,7 @@ jobs:
 
       - name: inline_ok_requirements
         run: |
-          python -m ok.update.inline_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
+          python -m ok.update.inline_ok_requirements --tag ${{ github.ref_name }}
 
       - name: Run tests
         run: |
@@ -102,6 +94,8 @@ jobs:
                 已有Mirror酱CD-KEY可免费下载
               * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
               * CPU版本为包含依赖的完整版, 3M的zip包为不带依赖的版本, 需要下载依赖
+            ###  更新日志 ${{ steps.sync.outputs.start_tag }} -> ${{ steps.sync.outputs.end_tag }}:
+                                      ${{ steps.sync.outputs.changes_with_asterisk }}
           files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading
