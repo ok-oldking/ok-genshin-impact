@@ -11,7 +11,7 @@ jobs:
       - uses: MirrorChyan/uploading-action@v1
         with:
           filetype: latest-release
-          filename: "ok-gi-win32-CPU.zip"
+          filename: "ok-gi-win32-CPU-setup.exe"
           mirrorchyan_rid: okgi
 
           github_token: ${{ secrets.GITHUB_TOKEN }}
